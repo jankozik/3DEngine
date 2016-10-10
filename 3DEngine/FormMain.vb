@@ -13,6 +13,7 @@ Public Class FormMain
     Private gifAnim As New GifEncoder(100)
     Private gifAnimEnable As Boolean = False
     Private captureFrame As Boolean
+    Private breakRenderingThread As Boolean
 
     Private syncObj As New Object()
 
@@ -32,11 +33,11 @@ Public Class FormMain
         InitializeScene()
 
         'AddObjectsToScene_Sample1()
-        'AddObjectsToScene_Sample2()
+        AddObjectsToScene_Sample2()
         'AddObjectsToScene_Sample3()
-        AddObjectsToScene_Sample4()
+        'AddObjectsToScene_Sample4()
 
-        r3D.Objects3D.ForEach(Sub(o3d) RandomizesFacesColors(o3d.Value))
+        'r3D.Objects3D.ForEach(Sub(o3d) RandomizesFacesColors(o3d.Value))
 
         StartRenderingThread()
     End Sub
@@ -47,7 +48,7 @@ Public Class FormMain
 
         r3D.RenderMode = RenderModes.ZBuffer 'Or RenderModes.ZBufferWireframe
         r3D.BackColor = Color.Black
-        r3D.ZBufferWireframeColor = Color.Black
+        r3D.ZBufferWireframeColor = Color.White
         r3D.ZBufferPixelSize = 2
         r3D.ZBufferColorDepth = True
         r3D.ZBufferTransparency = False
@@ -56,6 +57,7 @@ Public Class FormMain
     End Sub
 
     Private Sub CreateEventHandlers()
+        AddHandler Me.FormClosing, Sub() breakRenderingThread = True
         AddHandler Me.SizeChanged, Sub() SetSurfaceSize()
         AddHandler Me.KeyDown, Sub(s1 As Object, e1 As KeyEventArgs)
                                    If e1.KeyCode = Keys.Enter Then
@@ -95,7 +97,7 @@ Public Class FormMain
                                                   delayCounter = 0
                                               End If
                                           End If
-                                      Loop
+                                      Loop Until breakRenderingThread
                                   End Sub)
         renderThread.IsBackground = True
         renderThread.Start()

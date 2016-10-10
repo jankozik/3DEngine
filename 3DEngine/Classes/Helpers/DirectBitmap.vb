@@ -43,16 +43,16 @@ Public Class DirectBitmap
 
     Public Property Pixel(x As Integer, y As Integer) As Color
         Get
+            If x < 0 OrElse x >= Width OrElse y < 0 OrElse y >= Height Then Exit Property
             Dim offset As Integer = y * w4 + x * 4
-            If offset < 0 OrElse offset > bufferSize Then Exit Property
             Return Color.FromArgb(Bits(offset + 3),
                                   Bits(offset + 2),
                                   Bits(offset + 1),
                                   Bits(offset + 0))
         End Get
         Set(value As Color)
+            If x < 0 OrElse x >= Width OrElse y < 0 OrElse y >= Height Then Exit Property
             Dim offset As Integer = y * w4 + x * 4
-            If offset < 0 OrElse offset > bufferSize Then Exit Property
             Bits(offset + 3) = value.A
             Bits(offset + 2) = value.R
             Bits(offset + 1) = value.G

@@ -1,1 +1,0 @@
-Find more programming and electronics tutorials at http://codentronix.com 
