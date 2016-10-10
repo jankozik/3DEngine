@@ -46,6 +46,28 @@ Public Class Objects3DCollection
         End Set
     End Property
 
+    Default Public Property Item(index As Integer) As Object3D
+        Get
+            Dim i As Integer = 0
+            For Each itm In mCol
+                If i = index Then Return itm.Value
+                i += 1
+            Next
+            Throw New ArgumentOutOfRangeException()
+        End Get
+        Set(value As Object3D)
+            Dim i As Integer = 0
+            For Each itm In mCol
+                If i = index Then
+                    mCol(itm.Key) = value
+                    Exit Property
+                End If
+                i += 1
+            Next
+            Throw New ArgumentOutOfRangeException()
+        End Set
+    End Property
+
     Public ReadOnly Property Keys As ICollection(Of String) Implements IDictionary(Of String, Object3D).Keys
         Get
             Return mCol.Keys

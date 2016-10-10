@@ -42,8 +42,8 @@
         End Property
 
         Public Shared Operator =(t1 As Triangle, t2 As Triangle) As Boolean
-            Dim lines1() As Line = t1.Lines()
-            Dim lines2() As Line = t2.Lines()
+            Dim lines1() As Line = t1.Lines
+            Dim lines2() As Line = t2.Lines
 
             Dim counter As Integer = 0
             For i As Integer = 0 To lines1.Length - 1

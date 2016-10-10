@@ -107,7 +107,7 @@
         End Function
 
         Public Shared Operator =(p1 As Point3d, p2 As Point3d) As Boolean
-            'Return p1.IsSimilar(p2, 0.01)
+            'Return p1.IsSimilar(p2, 0.1)
             Return p1?.X = p2?.X AndAlso p1.Y = p2.Y AndAlso p1.Z = p2.Z
         End Operator
 

@@ -5,15 +5,16 @@
         Private mVertices(4 - 1) As Point3d
         Private mCenter As Point3d
         Private mRadius As Double
+        Private mIsValid As Boolean
 
         Public Sub New(p() As Point3d)
             mVertices = p
-            GetCenterCircumcircle()
+            GetCircumcircleCenter()
         End Sub
 
         Public Sub New(p1 As Point3d, p2 As Point3d, p3 As Point3d, p4 As Point3d)
             mVertices = {p1, p2, p3, p4}
-            GetCenterCircumcircle()
+            GetCircumcircleCenter()
         End Sub
 
         Public ReadOnly Property Vertices As Point3d()
@@ -34,7 +35,13 @@
             End Get
         End Property
 
-        Public ReadOnly Property Lines() As Line()
+        Public ReadOnly Property IsValid As Boolean
+            Get
+                Return mIsValid
+            End Get
+        End Property
+
+        Public ReadOnly Property Lines As Line()
             Get
                 Return New Line() {New Line(mVertices(0), mVertices(1)),
                                    New Line(mVertices(0), mVertices(2)),
@@ -45,7 +52,7 @@
             End Get
         End Property
 
-        Private Sub GetCenterCircumcircle()
+        Private Sub GetCircumcircleCenter()
             Dim v1 As Point3d = mVertices(0)
             Dim v2 As Point3d = mVertices(1)
             Dim v3 As Point3d = mVertices(2)
@@ -64,10 +71,12 @@
                 }
 
             Dim x(3 - 1) As Double
-            If Gauss(a, b, x) = 0 Then
+            If Gauss(a, b, x) = 0.0 Then
+                mIsValid = False
                 mCenter = Nothing
                 mRadius = -1
             Else
+                mIsValid = True
                 mCenter = New Point3d(x(0), x(1), x(2))
                 mRadius = mCenter.Distance(v1)
             End If

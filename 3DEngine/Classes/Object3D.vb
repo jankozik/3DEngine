@@ -153,7 +153,7 @@
         If simplify Then
             ' http://stackoverflow.com/questions/242404/sort-four-points-in-clockwise-order
             For Each t1 In triangles
-                Dim n1 = t1.Normal()
+                Dim n1 As Point3d = t1.Normal
 
                 Dim nf As Face = Nothing
                 For Each cf In mFaces
@@ -216,7 +216,7 @@
             Next
         Else
             For Each t1 In triangles
-                Dim nf As New Face(t1.Normal())
+                Dim nf As New Face(t1.Normal)
                 nf.Vertices.AddRange(t1.Vertices)
                 mFaces.Add(nf)
             Next

@@ -50,6 +50,8 @@ Namespace Delaunay
         End Property
 
         Public Sub SetData(points As List(Of Point3d))
+            Dim i As Integer
+
             mTetras.Clear()
             mEdges.Clear()
 
@@ -88,16 +90,16 @@ Namespace Delaunay
                 newTList.Clear()
 
                 For Each t As Tetrahedron In mTetras
-                    If t.Center IsNot Nothing AndAlso t.Radius > v.Distance(t.Center) Then tmpTList.Add(t)
+                    If t.IsValid AndAlso t.Radius > v.Distance(t.Center) Then tmpTList.Add(t)
                 Next
 
-                For Each t1 As Tetrahedron In tmpTList
-                    mTetras.Remove(t1)
+                For Each t As Tetrahedron In tmpTList
+                    mTetras.Remove(t)
 
-                    v1 = t1.Vertices(0)
-                    v2 = t1.Vertices(1)
-                    v3 = t1.Vertices(2)
-                    v4 = t1.Vertices(3)
+                    v1 = t.Vertices(0)
+                    v2 = t.Vertices(1)
+                    v3 = t.Vertices(2)
+                    v4 = t.Vertices(3)
                     newTList.Add(New Tetrahedron(v1, v2, v3, v))
                     newTList.Add(New Tetrahedron(v1, v2, v4, v))
                     newTList.Add(New Tetrahedron(v1, v3, v4, v))
@@ -105,7 +107,7 @@ Namespace Delaunay
                 Next
 
                 Dim isRedundantTetra(newTList.Count - 1) As Boolean
-                For i As Integer = 0 To newTList.Count - 2
+                For i = 0 To newTList.Count - 2
                     If isRedundantTetra(i) Then Continue For
                     For j As Integer = i + 1 To newTList.Count - 1
                         If newTList(i) = newTList(j) Then
@@ -114,15 +116,15 @@ Namespace Delaunay
                         End If
                     Next
                 Next
-                For i As Integer = 0 To isRedundantTetra.Count - 1
+                For i = 0 To isRedundantTetra.Count - 1
                     If Not isRedundantTetra(i) Then mTetras.Add(newTList(i))
                 Next
             Next
 
             Dim isOuter As Boolean
-            For Each t4 As Tetrahedron In mTetras.ToList()
+            For Each t As Tetrahedron In mTetras.ToList()
                 isOuter = False
-                For Each p1 As Point3d In t4.Vertices
+                For Each p1 As Point3d In t.Vertices
                     For Each p2 As Point3d In outer
                         If p1 = p2 Then
                             isOuter = True
@@ -131,13 +133,13 @@ Namespace Delaunay
                     Next
                     If isOuter Then Exit For
                 Next
-                If isOuter Then mTetras.Remove(t4)
+                If isOuter Then mTetras.Remove(t)
             Next
 
             mTriangles.Clear()
             Dim isSame As Boolean
             For Each t As Tetrahedron In mTetras
-                For Each l1 As Line In t.Lines()
+                For Each l1 As Line In t.Lines
                     isSame = False
                     For Each l2 In mEdges
                         If l1 = l2 Then
@@ -164,16 +166,16 @@ Namespace Delaunay
 
                 Dim n As Point3d
                 ' Decide direction of the surface
-                n = tri1.Normal()
+                n = tri1.Normal
                 If n.Dot(v1) > n.Dot(v4) Then tri1.Flip()
 
-                n = tri2.Normal()
+                n = tri2.Normal
                 If n.Dot(v1) > n.Dot(v2) Then tri2.Flip()
 
-                n = tri3.Normal()
+                n = tri3.Normal
                 If n.Dot(v1) > n.Dot(v3) Then tri3.Flip()
 
-                n = tri4.Normal()
+                n = tri4.Normal
                 If n.Dot(v4) > n.Dot(v1) Then tri4.Flip()
 
                 triList.Add(tri1)
@@ -183,7 +185,7 @@ Namespace Delaunay
             Next
 
             Dim isSameTriangle(triList.Count - 1) As Boolean
-            For i As Integer = 0 To triList.Count - 2
+            For i = 0 To triList.Count - 2
                 If isSameTriangle(i) Then Continue For
                 For j As Integer = i + 1 To triList.Count - 1
                     If triList(i) = triList(j) Then
@@ -192,18 +194,18 @@ Namespace Delaunay
                     End If
                 Next
             Next
-            For i As Integer = 0 To isSameTriangle.Count - 1
+            For i = 0 To isSameTriangle.Count - 1
                 If Not isSameTriangle(i) Then mTriangles.Add(triList(i))
             Next
 
             mSurfaceEdges.Clear()
             Dim surfaceEdgeList As New List(Of Line)
-            For Each tri As Triangle In mTriangles
-                surfaceEdgeList.AddRange(tri.Lines())
+            For Each t As Triangle In mTriangles
+                surfaceEdgeList.AddRange(t.Lines)
             Next
 
             Dim isRedundantEdge(surfaceEdgeList.Count - 1) As Boolean
-            For i As Integer = 0 To surfaceEdgeList.Count - 2
+            For i = 0 To surfaceEdgeList.Count - 2
                 If isRedundantEdge(i) Then Continue For
                 For j As Integer = i + 1 To surfaceEdgeList.Count - 1
                     If surfaceEdgeList(i) = surfaceEdgeList(j) Then
@@ -212,7 +214,7 @@ Namespace Delaunay
                     End If
                 Next
             Next
-            For i As Integer = 0 To isRedundantEdge.Count - 1
+            For i = 0 To isRedundantEdge.Count - 1
                 If Not isRedundantEdge(i) Then mSurfaceEdges.Add(surfaceEdgeList(i))
             Next
         End Sub
