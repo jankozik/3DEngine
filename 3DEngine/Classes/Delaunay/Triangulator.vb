@@ -33,7 +33,7 @@
 
 ' http://paulbourke.net/geometry/polygonmesh/
 
-Namespace Delaunay2
+Namespace Delaunay
     Public Class Triangualtor
         Private mTetras As New List(Of Tetrahedron)
         Private mEdges As New List(Of Line)
@@ -88,16 +88,16 @@ Namespace Delaunay2
                 newTList.Clear()
 
                 For Each t As Tetrahedron In mTetras
-                    If t.o IsNot Nothing AndAlso t.r > v.Distance(t.o) Then tmpTList.Add(t)
+                    If t.Center IsNot Nothing AndAlso t.Radius > v.Distance(t.Center) Then tmpTList.Add(t)
                 Next
 
                 For Each t1 As Tetrahedron In tmpTList
                     mTetras.Remove(t1)
 
-                    v1 = t1.vertices(0)
-                    v2 = t1.vertices(1)
-                    v3 = t1.vertices(2)
-                    v4 = t1.vertices(3)
+                    v1 = t1.Vertices(0)
+                    v2 = t1.Vertices(1)
+                    v3 = t1.Vertices(2)
+                    v4 = t1.Vertices(3)
                     newTList.Add(New Tetrahedron(v1, v2, v3, v))
                     newTList.Add(New Tetrahedron(v1, v2, v4, v))
                     newTList.Add(New Tetrahedron(v1, v3, v4, v))
@@ -122,7 +122,7 @@ Namespace Delaunay2
             Dim isOuter As Boolean
             For Each t4 As Tetrahedron In mTetras.ToList()
                 isOuter = False
-                For Each p1 As Point3d In t4.vertices
+                For Each p1 As Point3d In t4.Vertices
                     For Each p2 As Point3d In outer
                         If p1 = p2 Then
                             isOuter = True
@@ -137,7 +137,7 @@ Namespace Delaunay2
             mTriangles.Clear()
             Dim isSame As Boolean
             For Each t As Tetrahedron In mTetras
-                For Each l1 As Line In t.GetLines()
+                For Each l1 As Line In t.Lines()
                     isSame = False
                     For Each l2 In mEdges
                         If l1 = l2 Then
@@ -152,10 +152,10 @@ Namespace Delaunay2
             ' Obtain a face
             Dim triList As New List(Of Triangle)
             For Each t As Tetrahedron In mTetras
-                v1 = t.vertices(0)
-                v2 = t.vertices(1)
-                v3 = t.vertices(2)
-                v4 = t.vertices(3)
+                v1 = t.Vertices(0)
+                v2 = t.Vertices(1)
+                v3 = t.Vertices(2)
+                v4 = t.Vertices(3)
 
                 Dim tri1 As New Triangle(v1, v2, v3)
                 Dim tri2 As New Triangle(v1, v3, v4)
@@ -164,17 +164,17 @@ Namespace Delaunay2
 
                 Dim n As Point3d
                 ' Decide direction of the surface
-                n = tri1.GetNormal()
-                If n.Dot(v1) > n.Dot(v4) Then tri1.TurnBack()
+                n = tri1.Normal()
+                If n.Dot(v1) > n.Dot(v4) Then tri1.Flip()
 
-                n = tri2.GetNormal()
-                If n.Dot(v1) > n.Dot(v2) Then tri2.TurnBack()
+                n = tri2.Normal()
+                If n.Dot(v1) > n.Dot(v2) Then tri2.Flip()
 
-                n = tri3.GetNormal()
-                If n.Dot(v1) > n.Dot(v3) Then tri3.TurnBack()
+                n = tri3.Normal()
+                If n.Dot(v1) > n.Dot(v3) Then tri3.Flip()
 
-                n = tri4.GetNormal()
-                If n.Dot(v4) > n.Dot(v1) Then tri4.TurnBack()
+                n = tri4.Normal()
+                If n.Dot(v4) > n.Dot(v1) Then tri4.Flip()
 
                 triList.Add(tri1)
                 triList.Add(tri2)
@@ -199,7 +199,7 @@ Namespace Delaunay2
             mSurfaceEdges.Clear()
             Dim surfaceEdgeList As New List(Of Line)
             For Each tri As Triangle In mTriangles
-                surfaceEdgeList.AddRange(tri.GetLines())
+                surfaceEdgeList.AddRange(tri.Lines())
             Next
 
             Dim isRedundantEdge(surfaceEdgeList.Count - 1) As Boolean

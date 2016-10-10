@@ -1,9 +1,9 @@
-﻿Namespace Delaunay2
+﻿Namespace Delaunay
     Public Class Line
         Implements IEquatable(Of Line)
 
-        Public Start As Point3d
-        Public [End] As Point3d
+        Public Property Start As Point3d
+        Public Property [End] As Point3d
 
         Public Sub New(start As Point3d, [end] As Point3d)
             Me.Start = start

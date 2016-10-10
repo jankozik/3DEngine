@@ -1,35 +1,55 @@
-﻿Namespace Delaunay2
+﻿Namespace Delaunay
     Public Class Tetrahedron
         Implements IEquatable(Of Tetrahedron)
 
-        Public vertices(4 - 1) As Point3d
-        Public o As Point3d ' Center/Origin
-        Public r As Double ' External radius
+        Private mVertices(4 - 1) As Point3d
+        Private mCenter As Point3d
+        Private mRadius As Double
 
         Public Sub New(p() As Point3d)
-            vertices = p
+            mVertices = p
             GetCenterCircumcircle()
         End Sub
 
         Public Sub New(p1 As Point3d, p2 As Point3d, p3 As Point3d, p4 As Point3d)
-            vertices = {p1, p2, p3, p4}
+            mVertices = {p1, p2, p3, p4}
             GetCenterCircumcircle()
         End Sub
 
-        Public Function GetLines() As Line()
-            Return New Line() {New Line(vertices(0), vertices(1)),
-                               New Line(vertices(0), vertices(2)),
-                               New Line(vertices(0), vertices(3)),
-                               New Line(vertices(1), vertices(2)),
-                               New Line(vertices(1), vertices(3)),
-                               New Line(vertices(2), vertices(3))}
-        End Function
+        Public ReadOnly Property Vertices As Point3d()
+            Get
+                Return mVertices
+            End Get
+        End Property
+
+        Public ReadOnly Property Center As Point3d
+            Get
+                Return mCenter
+            End Get
+        End Property
+
+        Public ReadOnly Property Radius As Double
+            Get
+                Return mRadius
+            End Get
+        End Property
+
+        Public ReadOnly Property Lines() As Line()
+            Get
+                Return New Line() {New Line(mVertices(0), mVertices(1)),
+                                   New Line(mVertices(0), mVertices(2)),
+                                   New Line(mVertices(0), mVertices(3)),
+                                   New Line(mVertices(1), mVertices(2)),
+                                   New Line(mVertices(1), mVertices(3)),
+                                   New Line(mVertices(2), mVertices(3))}
+            End Get
+        End Property
 
         Private Sub GetCenterCircumcircle()
-            Dim v1 As Point3d = vertices(0)
-            Dim v2 As Point3d = vertices(1)
-            Dim v3 As Point3d = vertices(2)
-            Dim v4 As Point3d = vertices(3)
+            Dim v1 As Point3d = mVertices(0)
+            Dim v2 As Point3d = mVertices(1)
+            Dim v3 As Point3d = mVertices(2)
+            Dim v4 As Point3d = mVertices(3)
 
             Dim a()() As Double = New Double()() {
                     New Double() {v2.X - v1.X, v2.Y - v1.Y, v2.Z - v1.Z},
@@ -45,11 +65,11 @@
 
             Dim x(3 - 1) As Double
             If Gauss(a, b, x) = 0 Then
-                o = Nothing
-                r = -1
+                mCenter = Nothing
+                mRadius = -1
             Else
-                o = New Point3d(x(0), x(1), x(2))
-                r = o.Distance(v1)
+                mCenter = New Point3d(x(0), x(1), x(2))
+                mRadius = mCenter.Distance(v1)
             End If
         End Sub
 
@@ -145,8 +165,8 @@
 
         Public Shared Operator =(t1 As Tetrahedron, t2 As Tetrahedron) As Boolean
             Dim counter As Integer = 0
-            For Each p1 In t1.vertices
-                For Each p2 In t2.vertices
+            For Each p1 In t1.Vertices
+                For Each p2 In t2.Vertices
                     If p1.X = p2.X AndAlso p1.Y = p2.Y AndAlso p1.Z = p2.Z Then counter += 1
                 Next
             Next

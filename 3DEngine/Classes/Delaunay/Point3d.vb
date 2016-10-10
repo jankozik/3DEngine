@@ -1,13 +1,13 @@
-﻿Namespace Delaunay2
+﻿Namespace Delaunay
     Public Class Point3d
         Implements IEquatable(Of Point3d)
 
         Public Const ToRad As Double = Math.PI / 180.0
         Public Const ToDeg As Double = 180.0 / Math.PI
 
-        Public X As Double
-        Public Y As Double
-        Public Z As Double
+        Public Property X As Double
+        Public Property Y As Double
+        Public Property Z As Double
 
         Public Sub New()
         End Sub
@@ -176,7 +176,7 @@
             Dim dy As Double = p.Y - Y
 
             Dim a As Double = Math.Atan2(dy, dx) * ToDeg
-            If a < 0 Then a += 360
+            If a < 0 Then a += 360.0
             Return a
         End Function
 
@@ -185,7 +185,7 @@
             Dim dz As Double = p.Z - Z
 
             Dim a As Double = Math.Atan2(dz, dx) * ToDeg
-            If a < 0 Then a += 360
+            If a < 0 Then a += 360.0
             Return a
         End Function
 
@@ -194,7 +194,7 @@
             Dim dz As Double = p.Z - Z
 
             Dim a As Double = Math.Atan2(dz, dy) * ToDeg
-            If a < 0 Then a += 360
+            If a < 0 Then a += 360.0
             Return a
         End Function
     End Class

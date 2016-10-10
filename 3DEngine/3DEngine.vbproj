@@ -82,7 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
-    <Import Include="N3DEngine.Delaunay2" />
+    <Import Include="N3DEngine.Delaunay" />
     <Import Include="System" />
     <Import Include="System.Collections" />
     <Import Include="System.Collections.Generic" />
