@@ -131,15 +131,13 @@ Public Class Renderer
     Private Sub RenderAsWireFrame()
         For Each o3d In mObjects3D.Values
             For Each f In o3d.Faces
-                Dim p2d(f.Vertices.Count - 1) As PointF
+                Dim p2ds(f.Vertices.Count - 1) As PointF
 
                 For v = 0 To f.Vertices.Count - 1
-                    p2d(v) = TranslatePoint(f.Vertices(v)).ToPointF()
+                    p2ds(v) = TranslatePoint(f.Vertices(v)).ToPointF()
                 Next
 
-                Using p As New Pen(f.Color)
-                    'g.DrawPolygon(p, p2d)
-                End Using
+                Surface.DrawPolygon(f.Color, p2ds)
             Next
         Next
     End Sub
