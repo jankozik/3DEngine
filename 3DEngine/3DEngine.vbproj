@@ -94,18 +94,18 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Claases\Delaunay\Triangulator.vb" />
-    <Compile Include="Claases\Delaunay\Line.vb" />
-    <Compile Include="Claases\Delaunay\Point3d.vb" />
-    <Compile Include="Claases\Delaunay\Tetrahedron.vb" />
-    <Compile Include="Claases\Delaunay\Triangle.vb" />
-    <Compile Include="Claases\Helpers\ArrayExtensions.vb" />
-    <Compile Include="Claases\Helpers\DirectBitmap.vb" />
-    <Compile Include="Claases\Helpers\GifEncoder.vb" />
-    <Compile Include="Claases\Object3D.vb" />
-    <Compile Include="Claases\Objects3DCollection.vb" />
-    <Compile Include="Claases\Renderer.vb" />
-    <Compile Include="Claases\Vertice.vb" />
+    <Compile Include="Classes\Delaunay\Triangulator.vb" />
+    <Compile Include="Classes\Delaunay\Line.vb" />
+    <Compile Include="Classes\Delaunay\Point3d.vb" />
+    <Compile Include="Classes\Delaunay\Tetrahedron.vb" />
+    <Compile Include="Classes\Delaunay\Triangle.vb" />
+    <Compile Include="Classes\Helpers\ArrayExtensions.vb" />
+    <Compile Include="Classes\Helpers\DirectBitmap.vb" />
+    <Compile Include="Classes\Helpers\GifEncoder.vb" />
+    <Compile Include="Classes\Object3D.vb" />
+    <Compile Include="Classes\Objects3DCollection.vb" />
+    <Compile Include="Classes\Renderer.vb" />
+    <Compile Include="Classes\Vertice.vb" />
     <Compile Include="FormMain.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -128,8 +128,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Claases\Primitives.vb" />
-    <Compile Include="Claases\Face.vb" />
+    <Compile Include="Classes\Primitives.vb" />
+    <Compile Include="Classes\Face.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormMain.resx">
