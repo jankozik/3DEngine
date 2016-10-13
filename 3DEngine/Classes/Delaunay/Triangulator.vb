@@ -49,7 +49,7 @@ Namespace Delaunay
             End Get
         End Property
 
-        Public Sub SetData(points As List(Of Point3d))
+        Public Sub Triangulate(points As List(Of Point3d))
             Dim i As Integer
 
             mTetras.Clear()
@@ -68,6 +68,9 @@ Namespace Delaunay
                 If vMin.Z > v.Z Then vMin.Z = v.Z
             Next
 
+            'Dim f As New Face(points)
+            'Dim tmp = f.Centroid
+
             Dim center As Point3d = 0.5 * (vMax - vMin)  ' Full external sphere center coordinates
             Dim r As Double = -1.0                       ' Radius
             points.ForEach(Sub(v) If r < center.Distance(v) Then r = center.Distance(v))
@@ -78,46 +81,46 @@ Namespace Delaunay
             Dim v2 As New Point3d(center.X - 2.0 * Math.Sqrt(2) * r, center.Y - r, center.Z)
             Dim v3 As New Point3d(center.X + Math.Sqrt(2) * r, center.Y - r, center.Z + Math.Sqrt(6) * r)
             Dim v4 As New Point3d(center.X + Math.Sqrt(2) * r, center.Y - r, center.Z - Math.Sqrt(6) * r)
-            Dim outer() As Point3d = {v1, v2, v3, v4}
-            mTetras.Add(New Tetrahedron(v1, v2, v3, v4))
+            Dim outerTetra() As Point3d = {v1, v2, v3, v4}
+            mTetras.Add(New Tetrahedron(outerTetra))
 
             ' Temporary lists for dynamically changing the geometry
-            Dim tmpTList As New List(Of Tetrahedron)
-            Dim newTList As New List(Of Tetrahedron)
+            Dim tmpTetrasList As New List(Of Tetrahedron)
+            Dim newTetrasList As New List(Of Tetrahedron)
 
             For Each v In points
-                tmpTList.Clear()
-                newTList.Clear()
+                tmpTetrasList.Clear()
+                newTetrasList.Clear()
 
                 For Each t As Tetrahedron In mTetras
-                    If t.IsValid AndAlso t.Radius > v.Distance(t.Center) Then tmpTList.Add(t)
+                    If t.IsValid AndAlso t.Radius > v.Distance(t.Center) Then tmpTetrasList.Add(t)
                 Next
 
-                For Each t As Tetrahedron In tmpTList
+                For Each t As Tetrahedron In tmpTetrasList
                     mTetras.Remove(t)
 
                     v1 = t.Vertices(0)
                     v2 = t.Vertices(1)
                     v3 = t.Vertices(2)
                     v4 = t.Vertices(3)
-                    newTList.Add(New Tetrahedron(v1, v2, v3, v))
-                    newTList.Add(New Tetrahedron(v1, v2, v4, v))
-                    newTList.Add(New Tetrahedron(v1, v3, v4, v))
-                    newTList.Add(New Tetrahedron(v2, v3, v4, v))
+                    newTetrasList.Add(New Tetrahedron(v1, v2, v3, v))
+                    newTetrasList.Add(New Tetrahedron(v1, v2, v4, v))
+                    newTetrasList.Add(New Tetrahedron(v1, v3, v4, v))
+                    newTetrasList.Add(New Tetrahedron(v2, v3, v4, v))
                 Next
 
-                Dim isRedundantTetra(newTList.Count - 1) As Boolean
-                For i = 0 To newTList.Count - 2
+                Dim isRedundantTetra(newTetrasList.Count - 1) As Boolean
+                For i = 0 To newTetrasList.Count - 2
                     If isRedundantTetra(i) Then Continue For
-                    For j As Integer = i + 1 To newTList.Count - 1
-                        If newTList(i) = newTList(j) Then
+                    For j As Integer = i + 1 To newTetrasList.Count - 1
+                        If newTetrasList(i) = newTetrasList(j) Then
                             isRedundantTetra(i) = True
                             isRedundantTetra(j) = True
                         End If
                     Next
                 Next
                 For i = 0 To isRedundantTetra.Count - 1
-                    If Not isRedundantTetra(i) Then mTetras.Add(newTList(i))
+                    If Not isRedundantTetra(i) Then mTetras.Add(newTetrasList(i))
                 Next
             Next
 
@@ -125,7 +128,7 @@ Namespace Delaunay
             For Each t As Tetrahedron In mTetras.ToList()
                 isOuter = False
                 For Each p1 As Point3d In t.Vertices
-                    For Each p2 As Point3d In outer
+                    For Each p2 As Point3d In outerTetra
                         If p1 = p2 Then
                             isOuter = True
                             Exit For

@@ -49,20 +49,20 @@ Public Class Primitives
         Return c
     End Function
 
-    Public Shared Function Sphere(radius As Double) As List(Of Point3d)
+    Public Shared Function Sphere(radius As Double, Optional angleStep As Double = 45.0) As List(Of Point3d)
         Dim vertices As New List(Of Point3d)
         Dim arc As New List(Of Point3d)
-        Dim angleStep As Double = 45.0 ' Set 90.0 to produce an octahedron
+        ' Set angleStep to 90.0 to produce an octahedron
 
         For ca As Double = 0.0 To 180.0 Step angleStep
-            arc.Add(New Point3d(radius * Math.Cos((ca - 180.0) * Point3d.ToRad),
-                                   radius * Math.Sin((ca - 180.0) * Point3d.ToRad),
-                                   0))
+            arc.Add(New Point3d(radius * Math.Cos(ca * Point3d.ToRad),
+                                radius * Math.Sin(ca * Point3d.ToRad),
+                                0))
         Next
         vertices.AddRange(arc)
 
         Dim v As Point3d
-        For ax As Double = 0 To 360.0 Step angleStep
+        For ax As Double = angleStep To 360.0 - angleStep Step angleStep
             For i As Integer = 0 To arc.Count - 1
                 v = arc(i).RotateX(ax)
 
@@ -76,6 +76,27 @@ Public Class Primitives
                 If Not isDuplicate Then vertices.Add(v)
             Next
         Next
+
+        Return vertices
+    End Function
+
+    Public Shared Function Sphere2(radius As Double, Optional angleStep As Double = 45.0) As List(Of Point3d)
+        Dim vertices As New List(Of Point3d)
+        Dim arc As New List(Of Point3d)
+
+        Dim z As Double
+        Dim r As Double
+        Dim ca As Double
+        Do
+            r = Math.Sin(ca / radius * Point3d.ToRad) * radius
+            z = -Math.Cos(ca / radius * Point3d.ToRad) * radius
+
+            vertices.Add(New Point3d(r * Math.Cos(ca * Point3d.ToRad),
+                                r * Math.Sin(ca * Point3d.ToRad),
+                                z))
+
+            ca += angleStep
+        Loop While z < radius
 
         Return vertices
     End Function

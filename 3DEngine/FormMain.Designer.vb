@@ -32,6 +32,7 @@ Partial Class FormMain
         Me.ClientSize = New System.Drawing.Size(684, 561)
         Me.KeyPreview = True
         Me.Name = "FormMain"
+        Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "3DEngine"
         Me.ResumeLayout(False)
 

@@ -57,6 +57,13 @@ Public Class DirectBitmap
             Bits(offset + 2) = value.R
             Bits(offset + 1) = value.G
             Bits(offset + 0) = value.B
+
+            ' Preliminary transparency support
+            'Dim p As Double = 1.0 - value.A / 255.0
+            'Bits(offset + 3) = Bits(offset + 3) * p Or value.A
+            'Bits(offset + 2) = Bits(offset + 2) * p Or value.R
+            'Bits(offset + 1) = Bits(offset + 1) * p Or value.G
+            'Bits(offset + 0) = Bits(offset + 0) * p Or value.B
         End Set
     End Property
 

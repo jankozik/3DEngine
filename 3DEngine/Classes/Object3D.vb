@@ -24,14 +24,16 @@
     Private Property mBounds As Bounds3D
 
     Private tessellator As New Triangualtor()
+    Private mIsSolid As Boolean
 
-    Public Sub New(vertices As List(Of Point3d))
+    Public Sub New(vertices As List(Of Point3d), Optional triangulate As Boolean = True)
+        mIsSolid = triangulate
         mVertices = vertices
-        InitShape()
+        InitShape(triangulate)
     End Sub
 
-    Public Sub New(vertices As List(Of Point3d), color As Color)
-        Me.New(vertices)
+    Public Sub New(vertices As List(Of Point3d), color As Color, Optional triangulate As Boolean = True)
+        Me.New(vertices, triangulate)
         Me.Color = color
     End Sub
 
@@ -42,6 +44,12 @@
         Set(value As Color)
             mFaces.ForEach(Sub(f) f.Color = value)
         End Set
+    End Property
+
+    Public ReadOnly Property IsSolid As Boolean
+        Get
+            Return mIsSolid
+        End Get
     End Property
 
     Public ReadOnly Property Bounds As Bounds3D
@@ -110,15 +118,17 @@
         End Get
     End Property
 
-    Private Sub InitShape()
+    Private Sub InitShape(Optional triangulate As Boolean = True)
         ' Counter-clockwise Ordering
         ' http://stackoverflow.com/questions/8142388/in-what-order-should-i-send-my-vertices-to-opengl-for-culling
 
         ' http://www.openprocessing.org/sketch/31295
-        Debug.WriteLine("Applying Delaunay triangulation")
-        tessellator.SetData(mVertices)
-        Debug.WriteLine("Simplifying geometry and extracting faces")
-        ExtractFaces(tessellator.Triangles, True)
+        If triangulate Then
+            Debug.WriteLine("Applying Delaunay triangulation")
+            tessellator.Triangulate(mVertices)
+            Debug.WriteLine("Simplifying geometry and extracting faces")
+            ExtractFaces(tessellator.Triangles, True)
+        End If
 
         ' Euler's number and closed surfaces
         ' For closed surfaces V - E + F = 2
@@ -157,7 +167,7 @@
 
                 Dim nf As Face = Nothing
                 For Each cf In mFaces
-                    If n1.Equals(cf.Normal) Then
+                    If n1 = cf.Normal Then
                         hasCommonVertices = False
                         For Each v In t1.Vertices
                             If cf.Vertices.Contains(v) Then
@@ -199,6 +209,7 @@
                             Dim p2 = nf.Vertices(p((i + 1) Mod vertCount1))
 
                             perimeter += p1.Distance(p2)
+                            If perimeter > minPerimeter Then Exit For
                         Next
 
                         If perimeter < minPerimeter Then

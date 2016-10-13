@@ -29,7 +29,6 @@ Public Class GifEncoder
     End Sub
 
     Public Sub Save(fileName As String)
-        'If IO.File.Exists(fileName) Then IO.File.Delete(fileName)
         Using fs As New FileStream(fileName, FileMode.Create)
             gEnc.Save(fs)
         End Using

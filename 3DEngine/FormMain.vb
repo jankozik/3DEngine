@@ -37,7 +37,14 @@ Public Class FormMain
         'AddObjectsToScene_Sample3()
         'AddObjectsToScene_Sample4()
 
-        'r3D.Objects3D.ForEach(Sub(o3d) RandomizesFacesColors(o3d.Value))
+        Dim txt As String = ""
+        For Each o In r3D.Objects3D
+            For Each v In o.Value.Vertices
+                txt += v.ToString() + Environment.NewLine
+            Next
+        Next
+        'IO.File.WriteAllText("c:\users\xavier\desktop\sphere.txt", txt)
+        r3D.Objects3D.ForEach(Sub(o3d) RandomizesFacesColors(o3d.Value))
 
         StartRenderingThread()
     End Sub
@@ -112,14 +119,19 @@ Public Class FormMain
 
     Private Sub AddObjectsToScene_Sample1()
         r3D.Objects3D.Add("Cube", New Object3D(Primitives.Cube(8), Color.Blue))
-
         'r3D.Objects3D("Cube").TransformRotate(45, 0, 0)
     End Sub
 
     Private Sub AddObjectsToScene_Sample2()
-        r3D.Objects3D.Add("Cube", New Object3D(Primitives.Cube(6), Color.Blue))
-        r3D.Objects3D.Add("Tetrahedron", New Object3D(Primitives.Tetrahedron(6), Color.Red))
-        r3D.Objects3D.Add("SquarePyramid", New Object3D(Primitives.SquarePyramid(6), Color.Green))
+        r3D.Objects3D.Add("Cube",
+                          New Object3D(Primitives.Cube(8),
+                                       Color.Blue))
+        r3D.Objects3D.Add("Tetrahedron",
+                          New Object3D(Primitives.Tetrahedron(8),
+                                       Color.Red))
+        r3D.Objects3D.Add("SquarePyramid",
+                          New Object3D(Primitives.SquarePyramid(8),
+                                       Color.Green))
 
         r3D.Objects3D("Cube").TransformMove(-6, 0, 0)
         r3D.Objects3D("SquarePyramid").TransformRotate(-90, 0, 0)
@@ -131,7 +143,7 @@ Public Class FormMain
     End Sub
 
     Private Sub AddObjectsToScene_Sample4()
-        r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere(10), Color.Blue))
+        r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere(14), Color.Blue))
     End Sub
 
     Private Sub RandomizesFacesColors(object3D As Object3D)
@@ -142,6 +154,8 @@ Public Class FormMain
         colors.Add(Color.Yellow)
         colors.Add(Color.Magenta)
         colors.Add(Color.Orange)
+        colors.Add(Color.Cyan)
+        colors.Add(Color.Gray)
         colors.Add(Color.White)
 
         'colors = Shuffle(colors)
@@ -216,7 +230,7 @@ Public Class FormMain
         'DrawAxis(g)
 
         If r3D.Objects3D.ContainsKey("Sphere") Then
-            r3D.Objects3D("Sphere").TransformRotate(2.0, 2.5, -1.0)
+            'r3D.Objects3D("Sphere").TransformRotate(2.0, 2.5, -1.0)
         End If
     End Sub
 

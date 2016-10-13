@@ -114,6 +114,7 @@
 
         'Dim cx As Double = 0
         'Dim cy As Double = 0
+        'Dim cz As Double = 0
 
         'Dim j As Integer
         'Dim n = Vertices.Count
@@ -124,6 +125,7 @@
         '    factor = (Vertices(i).X * Vertices(j).Y - Vertices(j).X * Vertices(i).Y)
         '    cx += (Vertices(i).X + Vertices(j).X) * factor
         '    cy += (Vertices(i).Y + Vertices(j).Y) * factor
+        '    cz += (Vertices(i).Z + Vertices(j).Z) * factor
         'Next
 
         'Dim a = mArea * 6.0F
@@ -131,8 +133,9 @@
 
         'cx *= factor
         'cy *= factor
+        'cz *= factor
 
-        'mCentroid = New Point3d(cx, cy, 0)
+        'mCentroid = New Point3d(cx, cy, cz)
     End Sub
 
     Private Sub UpdateArea()
@@ -158,10 +161,6 @@
             Dim v2 = Vertices((i + 1) Mod n)
 
             mNormal += v1.Cross(v2)
-            'mNormal.X += (v1.Y - v2.Y) * (v1.Z + v2.Z)
-            'mNormal.Y += (v1.Z - v2.Z) * (v1.X + v2.X)
-            'mNormal.Z += (v1.X - v2.X) * (v1.Y + v2.Y)
-
             mNormal.Normalize()
         Next
     End Sub

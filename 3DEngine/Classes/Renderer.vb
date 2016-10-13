@@ -156,17 +156,23 @@ Public Class Renderer
         ResetZBuffer()
 
         For Each o3d In mObjects3D
-            'If Not o3d.Value.IsValid Then
-            '    For Each v In o3d.Value.Vertices
-            '        minZ = Math.Min(v.Z, minZ)
-            '        maxZ = Math.Max(v.Z, maxZ)
-            '    Next
+            If Not o3d.Value.IsValid OrElse Not o3d.Value.IsSolid Then
+                For Each v In o3d.Value.Vertices
+                    minZ = Math.Min(v.Z, minZ)
+                    maxZ = Math.Max(v.Z, maxZ)
+                Next
 
-            '    For Each v In o3d.Value.Vertices
-            '        Dim p As Point3d = TranslatePoint(v)
-            '        RenderZPixel(g, Color.Red, p.X, p.Y, p.Z, minZ, maxZ)
-            '    Next
-            'End If
+                For Each v In o3d.Value.Vertices
+                    Dim p As Point3d = TranslatePoint(v)
+                    RenderZPixel(Color.Red, p.X, p.Y, p.Z, minZ, maxZ)
+                Next
+
+                If Not o3d.Value.IsSolid Then Continue For
+            End If
+
+            ' I think it would be fast to first process all faces (list of projected [pf] and un-projected [uf])
+            '    and then render the faces in Z order (from closest to farthest).
+            ' Doing so would minimize the instances where a ZPixel is render more than once.
 
             For Each f As Face In o3d.Value.Faces
                 uVertices.Clear()
@@ -258,6 +264,7 @@ Public Class Renderer
             If minZ = maxZ Then
                 v = 1.0
             Else
+                minZ -= 10  ' Not sure about this, but it does make the shading more noticeable
                 v = (z - minZ) / (maxZ - minZ)
             End If
             v *= (1.0 - (Distance - z) / Distance)
