@@ -96,7 +96,7 @@ Public Class Primitives
                                 z))
 
             ca += angleStep
-        Loop While z < radius
+        Loop While Math.Abs(z - radius) > Triangualtor.Epsilon
 
         Return vertices
     End Function

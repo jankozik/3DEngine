@@ -18,7 +18,8 @@
         End Sub
     End Structure
 
-    Private mVertices As List(Of Point3d)
+    Private mVertices As New List(Of Point3d)
+    Private mEdges As New List(Of Line)
     Private mFaces As New List(Of Face)
     Private mIsValid As Boolean
     Private Property mBounds As Bounds3D
@@ -28,8 +29,8 @@
 
     Public Sub New(vertices As List(Of Point3d), Optional triangulate As Boolean = True)
         mIsSolid = triangulate
-        mVertices = vertices
-        InitShape(triangulate)
+        'mVertices = vertices
+        InitShape(vertices, triangulate)
     End Sub
 
     Public Sub New(vertices As List(Of Point3d), color As Color, Optional triangulate As Boolean = True)
@@ -86,6 +87,18 @@
         End Get
     End Property
 
+    Public ReadOnly Property Edges As List(Of Line)
+        Get
+            Return mEdges
+        End Get
+    End Property
+
+    Public ReadOnly Property Triangles As List(Of Triangle)
+        Get
+            Return tessellator?.Triangles
+        End Get
+    End Property
+
     Public Sub TransformMove(dx As Double, dy As Double, dz As Double)
         For Each f In mFaces
             For Each p In f.Vertices
@@ -94,6 +107,8 @@
                 p.Z += dz
             Next
         Next
+
+        UpdateObject()
     End Sub
 
     Public Sub TransformRotate(ax As Double, ay As Double, az As Double)
@@ -104,6 +119,8 @@
                                               RotateZ(az)
             Next
         Next
+
+        UpdateObject()
     End Sub
 
     Public ReadOnly Property Z As Double
@@ -118,41 +135,43 @@
         End Get
     End Property
 
-    Private Sub InitShape(Optional triangulate As Boolean = True)
+    Private Sub UpdateObject()
+        mVertices.Clear()
+        mFaces.ForEach(Sub(f) mVertices.AddRange(f.Vertices))
+
+        mEdges.Clear()
+        Dim verticesCount As Integer
+        For Each face In mFaces
+            verticesCount = face.Vertices.Count
+            For i As Integer = 0 To verticesCount - 1
+                Dim p1 = face.Vertices(i)
+                Dim p2 = face.Vertices((i + 1) Mod verticesCount)
+                Dim edge As New Line(p1, p2)
+                If Not mEdges.Contains(edge) Then mEdges.Add(edge)
+            Next
+        Next
+    End Sub
+
+    Private Sub InitShape(verts As List(Of Point3d), Optional triangulate As Boolean = True)
         ' Counter-clockwise Ordering
         ' http://stackoverflow.com/questions/8142388/in-what-order-should-i-send-my-vertices-to-opengl-for-culling
 
         ' http://www.openprocessing.org/sketch/31295
         If triangulate Then
+            'verts = OrderPoints(verts)
             Debug.WriteLine("Applying Delaunay triangulation")
-            tessellator.Triangulate(mVertices)
+            tessellator.Triangulate(verts)
             Debug.WriteLine("Simplifying geometry and extracting faces")
             ExtractFaces(tessellator.Triangles, True)
+        Else
+            mFaces.Add(New Face(verts))
         End If
+
+        UpdateObject()
 
         ' Euler's number and closed surfaces
         ' For closed surfaces V - E + F = 2
-        Dim vertices As New List(Of Point3d)
-        For Each face In mFaces
-            For Each vertex In face.Vertices
-                If Not vertices.Contains(vertex) Then vertices.Add(vertex)
-            Next
-        Next
-
-        Dim edges As New List(Of Vertice)
-        For Each face In mFaces
-            Dim verticesCount = face.Vertices.Count
-            For i As Integer = 0 To verticesCount - 1
-                Dim p1 = face.Vertices(i)
-                Dim p2 = face.Vertices((i + 1) Mod verticesCount)
-                Dim edge = New Vertice(p1, p2)
-
-                If Not edges.Contains(edge) Then edges.Add(edge)
-            Next
-        Next
-
-        'If vertices.Count - edges.Count + mFaces.Count <> 2 Then Throw New Exception("Shape is not closed")
-        mIsValid = (vertices.Count - edges.Count + mFaces.Count = 2)
+        mIsValid = (verts.Count - mEdges.Count + mFaces.Count = 2)
     End Sub
 
     Private Sub ExtractFaces(triangles As List(Of Triangle), simplify As Boolean)
@@ -234,11 +253,33 @@
         End If
     End Sub
 
+    Private Function OrderPoints(points As List(Of Point3d), Optional order As Integer = 16) As List(Of Point3d)
+        Dim ordered As New List(Of Point3d)
+        Dim pZOrder As New Dictionary(Of Point3d, Double)
+
+        Dim precision As Integer = 4
+        Dim multiplier As Integer = 10 ^ precision
+        Dim floor As Double = points.Min(Function(p) Math.Min(Math.Min(p.X, p.Y), p.Z))
+        floor = If(floor < 0, -floor, 0)
+        Dim fp3d As New Point3d(floor, floor, floor)
+
+        For Each p In points
+            Dim po As Point3d = ((p + fp3d) * multiplier).AsInt()
+            Dim flat() As UInteger = {CUInt(po.X), CUInt(po.Y), CUInt(po.Z)}
+            Dim h() As UInteger = HilbertCurveTransform.HilbertIndexTransposed(flat, order)
+            pZOrder.Add(p, (New Point3d(h(0), h(1), h(2))).Length)
+        Next
+
+        For Each pzo In pZOrder.OrderBy(Function(pz) pz.Value)
+            ordered.Add(pzo.Key)
+        Next
+
+        Return ordered
+    End Function
+
     Public Function Clone() As Object Implements ICloneable.Clone
         Dim vs As New List(Of Point3d)
-        For Each v In mVertices
-            vs.Add(New Point3d(v.X, v.Y, v.Z))
-        Next
+        mVertices.ForEach(Sub(v) vs.Add(New Point3d(v.X, v.Y, v.Z)))
         Return New Object3D(vs, Color)
     End Function
 End Class

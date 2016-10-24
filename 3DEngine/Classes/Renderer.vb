@@ -83,9 +83,9 @@ Public Class Renderer
         If project Then
             If rotate Then
                 Return (p.RotateX(AngleX).
-                         RotateY(AngleY).
-                         RotateZ(AngleZ) - mCamera).
-                         Project(mSurfaceSize.Width, mSurfaceSize.Height, FOV, Distance)
+                          RotateY(AngleY).
+                          RotateZ(AngleZ) - mCamera).
+                          Project(mSurfaceSize.Width, mSurfaceSize.Height, FOV, Distance)
             Else
                 Return p.Project(mSurfaceSize.Width, mSurfaceSize.Height, FOV, Distance)
             End If
@@ -100,17 +100,17 @@ Public Class Renderer
         End If
     End Function
 
-    Private Function DistanceFromPointToFace(p As Point3d, s As Face, Optional transformPoint As Boolean = False, Optional transFormFace As Boolean = False) As Double
-        If transformPoint Then p = TranslatePoint(p)
+    'Private Function DistanceFromPointToFace(p As Point3d, s As Face, Optional transformPoint As Boolean = False, Optional transFormFace As Boolean = False) As Double
+    '    If transformPoint Then p = TranslatePoint(p)
 
-        Return s.Vertices.Average(Function(v)
-                                      If transFormFace Then
-                                          Return TranslatePoint(v).Distance(p)
-                                      Else
-                                          Return v.Distance(p)
-                                      End If
-                                  End Function)
-    End Function
+    '    Return s.Vertices.Average(Function(v)
+    '                                  If transFormFace Then
+    '                                      Return TranslatePoint(v).Distance(p)
+    '                                  Else
+    '                                      Return v.Distance(p)
+    '                                  End If
+    '                              End Function)
+    'End Function
 
     Public Sub Render(clear As Boolean)
         If clear Then Surface.Clear(BackColor)
@@ -156,21 +156,7 @@ Public Class Renderer
         ResetZBuffer()
 
         For Each o3d In mObjects3D
-            If Not o3d.Value.IsValid OrElse Not o3d.Value.IsSolid Then
-                For Each v In o3d.Value.Vertices
-                    minZ = Math.Min(v.Z, minZ)
-                    maxZ = Math.Max(v.Z, maxZ)
-                Next
-
-                For Each v In o3d.Value.Vertices
-                    Dim p As Point3d = TranslatePoint(v)
-                    RenderZPixel(Color.Red, p.X, p.Y, p.Z, minZ, maxZ)
-                Next
-
-                If Not o3d.Value.IsSolid Then Continue For
-            End If
-
-            ' I think it would be fast to first process all faces (list of projected [pf] and un-projected [uf])
+            ' I think it would be faster to first process all faces (list of projected [pf] and un-projected [uf])
             '    and then render the faces in Z order (from closest to farthest).
             ' Doing so would minimize the instances where a ZPixel is render more than once.
 
@@ -194,35 +180,39 @@ Public Class Renderer
                     Next
                 End If
 
-                For y = pf.Top + ZBufferPixelSize To pf.Bottom Step ZBufferPixelSize
-                    For x = pf.Left + ZBufferPixelSize To pf.Right Step ZBufferPixelSize
-                        If Not pf.Contains(x, y) Then Continue For
+                If True Then 'o3d.Value.IsValid AndAlso o3d.Value.IsSolid Then
+                    For y = pf.Top + ZBufferPixelSize To pf.Bottom Step ZBufferPixelSize
+                        For x = pf.Left + ZBufferPixelSize To pf.Right Step ZBufferPixelSize
+                            If Not pf.Contains(x, y) Then Continue For
 
-                        z = IsZBufferPixelValid(x, y, uf)
-                        If z <> Double.MaxValue Then
-                            If fillFaces Then RenderZPixel(f.Color, x, y, z, minZ, maxZ)
+                            z = IsZBufferPixelValid(x, y, uf)
+                            If z <> Double.MaxValue Then
+                                If fillFaces Then RenderZPixel(f.Color, x, y, z, minZ, maxZ)
 
-                            If wireFrame Then
-                                Dim isOnEdge As Boolean = False
-                                For y1 = y - ZBufferPixelSize To y + ZBufferPixelSize
-                                    For x1 = x - ZBufferPixelSize To x + ZBufferPixelSize
-                                        If Not pf.Contains(x1, y1) Then
-                                            isOnEdge = True
-                                            Exit For
-                                        End If
+                                If wireFrame Then
+                                    Dim isOnEdge As Boolean = False
+                                    For y1 = y - ZBufferPixelSize To y + ZBufferPixelSize
+                                        For x1 = x - ZBufferPixelSize To x + ZBufferPixelSize
+                                            If Not pf.Contains(x1, y1) Then
+                                                isOnEdge = True
+                                                Exit For
+                                            End If
+                                        Next
+                                        If isOnEdge Then Exit For
                                     Next
-                                    If isOnEdge Then Exit For
-                                Next
 
-                                If isOnEdge Then
-                                    RenderZPixel(ZBufferWireframeColor, x, y, z, minZ, maxZ)
-                                ElseIf Not fillFaces Then
-                                    RenderZPixel(BackColor, x, y, z, minZ, maxZ)
+                                    If isOnEdge Then
+                                        RenderZPixel(ZBufferWireframeColor, x, y, z, minZ, maxZ)
+                                    ElseIf Not fillFaces Then
+                                        RenderZPixel(BackColor, x, y, z, minZ, maxZ)
+                                    End If
                                 End If
                             End If
-                        End If
+                        Next
                     Next
-                Next
+                Else
+                    f.Vertices.ForEach(Sub(v) RenderZPixel(Color.Red, TranslatePoint(v).AsInt(ZBufferPixelSize), minZ, maxZ))
+                End If
             Next
         Next
     End Sub
@@ -245,15 +235,18 @@ Public Class Renderer
                                                     mSurfaceSize.Height,
                                                     FOV, Distance))
         Dim interPoint As Point3d = uf.GetPointAtIntersection(ray)
-        If interPoint Is Nothing Then Return Double.MaxValue
 
-        If interPoint.Z < mZBuffer(zBufferOffset) Then
+        If interPoint?.Z < mZBuffer(zBufferOffset) Then
             mZBuffer(zBufferOffset) = interPoint.Z
             Return interPoint.Z
         Else
             Return Double.MaxValue
         End If
     End Function
+
+    Private Sub RenderZPixel(c As Color, p As Point3d, minZ As Double, maxZ As Double)
+        RenderZPixel(c, p.X, p.Y, p.Z, minZ, maxZ)
+    End Sub
 
     Private Sub RenderZPixel(c As Color, x As Integer, y As Integer, z As Double, minZ As Double, maxZ As Double)
         Dim alpha As Double = 1.0
@@ -285,5 +278,28 @@ Public Class Renderer
                 Next
             Next
         End If
+    End Sub
+
+    Private Sub RenderZLine(c1 As Color, p1 As Point3d, c2 As Color, p2 As Point3d, minZ As Double, maxZ As Double)
+        Dim dx As Double = p2.X - p1.X
+        Dim dy As Double = p2.Y - p1.Y
+        Dim l As Double = Math.Sqrt(dx ^ 2 + dy ^ 2)
+        Dim a As Double = Math.Atan2(dy, dx)
+        Dim p As New Point3d()
+        Dim d As Double
+        Dim c As Color
+
+        Dim Blend = Function(v1 As Double, v2 As Double) (v2 - v1) * d + v1
+
+        For r = 0 To l
+            d = r / l
+
+            p.X = p1.X + r * Math.Cos(-a)
+            p.Y = p1.Y + r * Math.Sin(a)
+            p.Z = Blend(p1.Z, p2.Z)
+
+            c = Color.FromArgb(Blend(c1.A, c2.A), Blend(c1.R, c2.R), Blend(c1.G, c2.G), Blend(c1.B, c2.B))
+            RenderZPixel(c, p, minZ, maxZ)
+        Next
     End Sub
 End Class

@@ -33,9 +33,9 @@ Public Class FormMain
         InitializeScene()
 
         'AddObjectsToScene_Sample1()
-        AddObjectsToScene_Sample2()
+        'ddObjectsToScene_Sample2()
         'AddObjectsToScene_Sample3()
-        'AddObjectsToScene_Sample4()
+        AddObjectsToScene_Sample4()
 
         Dim txt As String = ""
         For Each o In r3D.Objects3D
@@ -43,7 +43,7 @@ Public Class FormMain
                 txt += v.ToString() + Environment.NewLine
             Next
         Next
-        'IO.File.WriteAllText("c:\users\xavier\desktop\sphere.txt", txt)
+        IO.File.WriteAllText(IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "sphere.txt"), txt)
         r3D.Objects3D.ForEach(Sub(o3d) RandomizesFacesColors(o3d.Value))
 
         StartRenderingThread()
@@ -64,7 +64,11 @@ Public Class FormMain
     End Sub
 
     Private Sub CreateEventHandlers()
-        AddHandler Me.FormClosing, Sub() breakRenderingThread = True
+        AddHandler Me.FormClosing, Sub()
+                                       SyncLock syncObj
+                                           breakRenderingThread = True
+                                       End SyncLock
+                                   End Sub
         AddHandler Me.SizeChanged, Sub() SetSurfaceSize()
         AddHandler Me.KeyDown, Sub(s1 As Object, e1 As KeyEventArgs)
                                    If e1.KeyCode = Keys.Enter Then
@@ -143,7 +147,8 @@ Public Class FormMain
     End Sub
 
     Private Sub AddObjectsToScene_Sample4()
-        r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere(14), Color.Blue))
+        'r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere(14), Color.Blue))
+        r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere2(14, 20), Color.Blue))
     End Sub
 
     Private Sub RandomizesFacesColors(object3D As Object3D)

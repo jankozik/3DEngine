@@ -102,10 +102,10 @@
     <Compile Include="Classes\Helpers\ArrayExtensions.vb" />
     <Compile Include="Classes\Helpers\DirectBitmap.vb" />
     <Compile Include="Classes\Helpers\GifEncoder.vb" />
+    <Compile Include="Classes\Delaunay\Hilbert.vb" />
     <Compile Include="Classes\Object3D.vb" />
     <Compile Include="Classes\Objects3DCollection.vb" />
     <Compile Include="Classes\Renderer.vb" />
-    <Compile Include="Classes\Vertice.vb" />
     <Compile Include="FormMain.vb">
       <SubType>Form</SubType>
     </Compile>

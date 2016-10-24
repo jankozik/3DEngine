@@ -71,10 +71,8 @@
                 }
 
             Dim x(3 - 1) As Double
-            If Gauss(a, b, x) = 0.0 Then
+            If Math.Abs(Gauss(a, b, x)) <= Triangualtor.Epsilon Then
                 mIsValid = False
-                mCenter = Nothing
-                mRadius = -1
             Else
                 mIsValid = True
                 mCenter = New Point3d(x(0), x(1), x(2))
@@ -176,7 +174,7 @@
             Dim counter As Integer = 0
             For Each p1 In t1.Vertices
                 For Each p2 In t2.Vertices
-                    If p1.X = p2.X AndAlso p1.Y = p2.Y AndAlso p1.Z = p2.Z Then counter += 1
+                    If p1 = p2 Then counter += 1
                 Next
             Next
 

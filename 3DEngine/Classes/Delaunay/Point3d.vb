@@ -28,10 +28,6 @@
             Return Math.Sqrt((X - p.X) ^ 2 + (Y - p.Y) ^ 2 + (Z - p.Z) ^ 2)
         End Function
 
-        Public Function Distance2d(p As Point3d) As Double
-            Return Math.Sqrt((X - p.X) ^ 2 + (Y - p.Y) ^ 2)
-        End Function
-
         Public Function Length() As Double
             Return Math.Sqrt(X ^ 2 + Y ^ 2 + Z ^ 2)
         End Function
@@ -107,8 +103,8 @@
         End Function
 
         Public Shared Operator =(p1 As Point3d, p2 As Point3d) As Boolean
-            'Return p1.IsSimilar(p2, 0.1)
-            Return p1?.X = p2?.X AndAlso p1.Y = p2.Y AndAlso p1.Z = p2.Z
+            Return p1.IsSimilar(p2)
+            'Return p1?.X = p2?.X AndAlso p1.Y = p2.Y AndAlso p1.Z = p2.Z
         End Operator
 
         Public Shared Operator <>(p1 As Point3d, p2 As Point3d) As Boolean
@@ -143,6 +139,10 @@
             Return p1 * (1 / scalar)
         End Operator
 
+        Public Function ToArray() As Double()
+            Return {X, Y, Z}
+        End Function
+
         Public Overrides Function ToString() As String
             Return $"({X:F2}, {Y:F2}, {Z:F2})"
         End Function
@@ -165,10 +165,10 @@
             Return Me = other
         End Function
 
-        Public Function IsSimilar(p As Point3d, Optional epsilon As Double = 0.0001) As Boolean
-            Return Math.Abs(X - p.X) <= epsilon AndAlso
-                   Math.Abs(Y - p.Y) <= epsilon AndAlso
-                   Math.Abs(Z - p.Z) <= epsilon
+        Public Function IsSimilar(p As Point3d) As Boolean
+            Return Math.Abs(X - p.X) <= Triangualtor.Epsilon AndAlso
+                   Math.Abs(Y - p.Y) <= Triangualtor.Epsilon AndAlso
+                   Math.Abs(Z - p.Z) <= Triangualtor.Epsilon
         End Function
 
         Public Function AngleXY(p As Point3d) As Double

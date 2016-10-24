@@ -166,14 +166,14 @@
     End Sub
 
     ' http://stackoverflow.com/questions/21114796/3d-ray-quad-intersection-test-in-java
-    Public Function GetPointAtIntersection(ray As Line, Optional epsilon As Double = 0.000001) As Point3d
+    Public Function GetPointAtIntersection(ray As Line) As Point3d
         Dim dS21 = Vertices(1) - Vertices(0)
         Dim dS31 = Vertices(2) - Vertices(0)
         Dim n = dS21.Cross(dS31) ' mNormal
 
         Dim dR = ray.Start - ray.End
         Dim nDotdR = n.Dot(dR)
-        If Math.Abs(nDotdR) < epsilon Then Return Nothing
+        If Math.Abs(nDotdR) < Triangualtor.Epsilon Then Return Nothing
 
         Dim t = -n.Dot(ray.Start - Vertices(0)) / nDotdR
         Dim M = ray.Start + (dR * t)
@@ -188,43 +188,6 @@
         Else
             Return Nothing
         End If
-    End Function
-
-    ' http://paulbourke.net/geometry/polygonmesh/
-    ' Determining if a point lies on the interior of a polygon
-    ' Solution 4 (3D)
-    Public Function Contains(p As Point3d, Optional epsilon As Double = 0.0001) As Boolean
-        Dim p1 As New Point3d()
-        Dim p2 As New Point3d()
-        Dim m As Double
-        Dim m1 As Double
-        Dim m2 As Double
-        Dim n As Integer = Vertices.Count
-        Dim cosTheta As Double
-        Dim angleSum As Double
-
-        Const TAU As Double = 2 * Math.PI
-
-        For v = 0 To n - 1
-            p1 = Vertices(v) - p
-            p2 = Vertices((v + 1) Mod n) - p
-
-            m1 = p1.Length
-            m2 = p2.Length
-            m = m1 * m2
-
-            If m <= epsilon Then ' The point is on a vertex
-                'mPointCloseness = 1.0
-                Return True
-            Else
-                cosTheta = p1.Dot(p2) / m
-            End If
-
-            angleSum += Math.Acos(cosTheta)
-        Next
-
-        'mPointCloseness = angleSum / TAU
-        Return Math.Abs(TAU - angleSum) <= epsilon
     End Function
 
     Public Function Contains(x As Double, y As Double) As Boolean

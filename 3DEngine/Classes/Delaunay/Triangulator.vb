@@ -35,6 +35,8 @@
 
 Namespace Delaunay
     Public Class Triangualtor
+        Public Const Epsilon As Double = 0.01
+
         Private mTetras As New List(Of Tetrahedron)
         Private mEdges As New List(Of Line)
         Private mSurfaceEdges As New List(Of Line)
@@ -49,11 +51,28 @@ Namespace Delaunay
             End Get
         End Property
 
+        Public ReadOnly Property Edges As List(Of Line)
+            Get
+                Return mEdges
+            End Get
+        End Property
+
+        Public ReadOnly Property SurfaceEdges As List(Of Line)
+            Get
+                Return mSurfaceEdges
+            End Get
+        End Property
+
+        Public ReadOnly Property Tetrahedrons As List(Of Tetrahedron)
+            Get
+                Return mTetras
+            End Get
+        End Property
+
         Public Sub Triangulate(points As List(Of Point3d))
             Dim i As Integer
 
             mTetras.Clear()
-            mEdges.Clear()
 
             ' Obtain a tetrahedron that includes the point group
             ' Obtain a sphere including point clouds
@@ -92,13 +111,17 @@ Namespace Delaunay
                 tmpTetrasList.Clear()
                 newTetrasList.Clear()
 
-                For Each t As Tetrahedron In mTetras
-                    If t.IsValid AndAlso t.Radius > v.Distance(t.Center) Then tmpTetrasList.Add(t)
-                Next
+                i = 0
+                Do
+                    If mTetras(i).IsValid AndAlso mTetras(i).Radius > v.Distance(mTetras(i).Center) Then
+                        tmpTetrasList.Add(mTetras(i))
+                        mTetras.RemoveAt(i)
+                    Else
+                        i += 1
+                    End If
+                Loop While i < mTetras.Count
 
-                For Each t As Tetrahedron In tmpTetrasList
-                    mTetras.Remove(t)
-
+                For Each t As Tetrahedron In tmpTetrasList.AsParallel()
                     v1 = t.Vertices(0)
                     v2 = t.Vertices(1)
                     v3 = t.Vertices(2)
@@ -111,7 +134,7 @@ Namespace Delaunay
 
                 Dim isRedundantTetra(newTetrasList.Count - 1) As Boolean
                 For i = 0 To newTetrasList.Count - 2
-                    If isRedundantTetra(i) Then Continue For
+                    'If isRedundantTetra(i) Then Continue For
                     For j As Integer = i + 1 To newTetrasList.Count - 1
                         If newTetrasList(i) = newTetrasList(j) Then
                             isRedundantTetra(i) = True
@@ -119,29 +142,33 @@ Namespace Delaunay
                         End If
                     Next
                 Next
-                For i = 0 To isRedundantTetra.Count - 1
+                For i = 0 To newTetrasList.Count - 1
                     If Not isRedundantTetra(i) Then mTetras.Add(newTetrasList(i))
                 Next
+
+                Debug.WriteLine($"{points.IndexOf(v)} ({points.IndexOf(v) / points.Count * 100:F2}) --> {mTetras.Count}")
             Next
 
             Dim isOuter As Boolean
-            For Each t As Tetrahedron In mTetras.ToList()
+            i = 0
+            Do
                 isOuter = False
-                For Each p1 As Point3d In t.Vertices
+                For Each p1 As Point3d In mTetras(i).Vertices
                     For Each p2 As Point3d In outerTetra
                         If p1 = p2 Then
                             isOuter = True
+                            mTetras.RemoveAt(i)
                             Exit For
                         End If
                     Next
                     If isOuter Then Exit For
                 Next
-                If isOuter Then mTetras.Remove(t)
-            Next
+                If Not isOuter Then i += 1
+            Loop While i < mTetras.Count
 
-            mTriangles.Clear()
+            mEdges.Clear()
             Dim isSame As Boolean
-            For Each t As Tetrahedron In mTetras
+            For Each t As Tetrahedron In mTetras.AsParallel()
                 For Each l1 As Line In t.Lines
                     isSame = False
                     For Each l2 In mEdges
@@ -156,7 +183,7 @@ Namespace Delaunay
 
             ' Obtain a face
             Dim triList As New List(Of Triangle)
-            For Each t As Tetrahedron In mTetras
+            For Each t As Tetrahedron In mTetras.AsParallel()
                 v1 = t.Vertices(0)
                 v2 = t.Vertices(1)
                 v3 = t.Vertices(2)
@@ -187,9 +214,10 @@ Namespace Delaunay
                 triList.Add(tri4)
             Next
 
+            mTriangles.Clear()
             Dim isSameTriangle(triList.Count - 1) As Boolean
             For i = 0 To triList.Count - 2
-                If isSameTriangle(i) Then Continue For
+                'If isSameTriangle(i) Then Continue For
                 For j As Integer = i + 1 To triList.Count - 1
                     If triList(i) = triList(j) Then
                         isSameTriangle(i) = True
@@ -209,7 +237,7 @@ Namespace Delaunay
 
             Dim isRedundantEdge(surfaceEdgeList.Count - 1) As Boolean
             For i = 0 To surfaceEdgeList.Count - 2
-                If isRedundantEdge(i) Then Continue For
+                'If isRedundantEdge(i) Then Continue For
                 For j As Integer = i + 1 To surfaceEdgeList.Count - 1
                     If surfaceEdgeList(i) = surfaceEdgeList(j) Then
                         isRedundantEdge(i) = True
