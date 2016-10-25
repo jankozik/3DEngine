@@ -161,6 +161,10 @@
             Return New Point3d(X1, Y1, Z1)
         End Function
 
+        Public Function Compare(p As Point3d) As Integer
+            Return Me.Length.CompareTo(p.Length)
+        End Function
+
         Public Shadows Function Equals(other As Point3d) As Boolean Implements IEquatable(Of Point3d).Equals
             Return Me = other
         End Function

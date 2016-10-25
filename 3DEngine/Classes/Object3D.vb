@@ -159,15 +159,16 @@
         ' http://www.openprocessing.org/sketch/31295
         If triangulate Then
             'verts = OrderPoints(verts)
-            Debug.WriteLine("Applying Delaunay triangulation")
+            Console.WriteLine("Applying Delaunay triangulation")
             tessellator.Triangulate(verts)
-            Debug.WriteLine("Simplifying geometry and extracting faces")
+            Console.WriteLine("Simplifying geometry and extracting faces")
             ExtractFaces(tessellator.Triangles, True)
         Else
             mFaces.Add(New Face(verts))
         End If
 
         UpdateObject()
+        Console.WriteLine($"{mVertices.Count:N0} vertices and {mFaces.Count:N0} faces")
 
         ' Euler's number and closed surfaces
         ' For closed surfaces V - E + F = 2

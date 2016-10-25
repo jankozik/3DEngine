@@ -70,8 +70,6 @@ Namespace Delaunay
         End Property
 
         Public Sub Triangulate(points As List(Of Point3d))
-            Dim i As Integer
-
             mTetras.Clear()
 
             ' Obtain a tetrahedron that includes the point group
@@ -103,23 +101,21 @@ Namespace Delaunay
             Dim outerTetra() As Point3d = {v1, v2, v3, v4}
             mTetras.Add(New Tetrahedron(outerTetra))
 
-            ' Temporary lists for dynamically changing the geometry
-            Dim tmpTetrasList As New List(Of Tetrahedron)
-            Dim newTetrasList As New List(Of Tetrahedron)
+            Console.WriteLine("Analyzing points and generating tetrahedrons...")
+            For Each v In points.AsParallel()
+                ' Temporary lists for dynamically changing the geometry
+                Dim tmpTetrasList As New List(Of Tetrahedron)
+                Dim newTetrasList As New List(Of Tetrahedron)
 
-            For Each v In points
-                tmpTetrasList.Clear()
-                newTetrasList.Clear()
-
-                i = 0
+                Dim n As Integer = 0
                 Do
-                    If mTetras(i).IsValid AndAlso mTetras(i).Radius > v.Distance(mTetras(i).Center) Then
-                        tmpTetrasList.Add(mTetras(i))
-                        mTetras.RemoveAt(i)
+                    If mTetras(n).IsValid AndAlso mTetras(n).Radius > v.Distance(mTetras(n).Center) Then
+                        tmpTetrasList.Add(mTetras(n))
+                        mTetras.RemoveAt(n)
                     Else
-                        i += 1
+                        n += 1
                     End If
-                Loop While i < mTetras.Count
+                Loop While n < mTetras.Count
 
                 For Each t As Tetrahedron In tmpTetrasList.AsParallel()
                     v1 = t.Vertices(0)
@@ -133,39 +129,49 @@ Namespace Delaunay
                 Next
 
                 Dim isRedundantTetra(newTetrasList.Count - 1) As Boolean
-                For i = 0 To newTetrasList.Count - 2
-                    'If isRedundantTetra(i) Then Continue For
-                    For j As Integer = i + 1 To newTetrasList.Count - 1
-                        If newTetrasList(i) = newTetrasList(j) Then
-                            isRedundantTetra(i) = True
-                            isRedundantTetra(j) = True
-                        End If
-                    Next
-                Next
-                For i = 0 To newTetrasList.Count - 1
+                Threading.Tasks.Parallel.For(0, newTetrasList.Count - 1, Sub(i As Integer)
+                                                                             Threading.Tasks.Parallel.For(i + 1, newTetrasList.Count, Sub(j As Integer)
+                                                                                                                                          If newTetrasList(i) = newTetrasList(j) Then
+                                                                                                                                              isRedundantTetra(i) = True
+                                                                                                                                              isRedundantTetra(j) = True
+                                                                                                                                          End If
+                                                                                                                                      End Sub)
+                                                                         End Sub)
+                'For i As Integer = 0 To newTetrasList.Count - 2
+                '    'If isRedundantTetra(i) Then Continue For
+                '    For j As Integer = i + 1 To newTetrasList.Count - 1
+                '        If newTetrasList(i) = newTetrasList(j) Then
+                '            isRedundantTetra(i) = True
+                '            isRedundantTetra(j) = True
+                '        End If
+                '    Next
+                'Next
+                For i As Integer = 0 To newTetrasList.Count - 1
                     If Not isRedundantTetra(i) Then mTetras.Add(newTetrasList(i))
                 Next
 
-                Debug.WriteLine($"{points.IndexOf(v)} ({points.IndexOf(v) / points.Count * 100:F2}) --> {mTetras.Count}")
+                Console.WriteLine($"    {points.IndexOf(v)} / {points.Count} ({points.IndexOf(v) / points.Count * 100:F2}) --> {mTetras.Count}")
             Next
 
+            Console.WriteLine("Removing outer tetrahedrons...")
             Dim isOuter As Boolean
-            i = 0
+            Dim k As Integer = 0
             Do
                 isOuter = False
-                For Each p1 As Point3d In mTetras(i).Vertices
+                For Each p1 As Point3d In mTetras(k).Vertices
                     For Each p2 As Point3d In outerTetra
                         If p1 = p2 Then
                             isOuter = True
-                            mTetras.RemoveAt(i)
+                            mTetras.RemoveAt(k)
                             Exit For
                         End If
                     Next
                     If isOuter Then Exit For
                 Next
-                If Not isOuter Then i += 1
-            Loop While i < mTetras.Count
+                If Not isOuter Then k += 1
+            Loop While k < mTetras.Count
 
+            Console.WriteLine("Adding edges...")
             mEdges.Clear()
             Dim isSame As Boolean
             For Each t As Tetrahedron In mTetras.AsParallel()
@@ -181,7 +187,7 @@ Namespace Delaunay
                 Next
             Next
 
-            ' Obtain a face
+            Console.WriteLine("Obtaining faces...")
             Dim triList As New List(Of Triangle)
             For Each t As Tetrahedron In mTetras.AsParallel()
                 v1 = t.Vertices(0)
@@ -214,21 +220,31 @@ Namespace Delaunay
                 triList.Add(tri4)
             Next
 
+            Console.WriteLine("Obtaining triangles...")
             mTriangles.Clear()
             Dim isSameTriangle(triList.Count - 1) As Boolean
-            For i = 0 To triList.Count - 2
-                'If isSameTriangle(i) Then Continue For
-                For j As Integer = i + 1 To triList.Count - 1
-                    If triList(i) = triList(j) Then
-                        isSameTriangle(i) = True
-                        isSameTriangle(j) = True
-                    End If
-                Next
-            Next
-            For i = 0 To isSameTriangle.Count - 1
+            Threading.Tasks.Parallel.For(0, triList.Count - 1, Sub(i As Integer)
+                                                                   Threading.Tasks.Parallel.For(i + 1, triList.Count, Sub(j As Integer)
+                                                                                                                          If triList(i) = triList(j) Then
+                                                                                                                              isSameTriangle(i) = True
+                                                                                                                              isSameTriangle(j) = True
+                                                                                                                          End If
+                                                                                                                      End Sub)
+                                                               End Sub)
+            'For i As Integer = 0 To triList.Count - 2
+            '    'If isSameTriangle(i) Then Continue For
+            '    For j As Integer = i + 1 To triList.Count - 1
+            '        If triList(i) = triList(j) Then
+            '            isSameTriangle(i) = True
+            '            isSameTriangle(j) = True
+            '        End If
+            '    Next
+            'Next
+            For i As Integer = 0 To isSameTriangle.Count - 1
                 If Not isSameTriangle(i) Then mTriangles.Add(triList(i))
             Next
 
+            Console.WriteLine("Obtaining surface edges...")
             mSurfaceEdges.Clear()
             Dim surfaceEdgeList As New List(Of Line)
             For Each t As Triangle In mTriangles
@@ -236,7 +252,7 @@ Namespace Delaunay
             Next
 
             Dim isRedundantEdge(surfaceEdgeList.Count - 1) As Boolean
-            For i = 0 To surfaceEdgeList.Count - 2
+            For i As Integer = 0 To surfaceEdgeList.Count - 2
                 'If isRedundantEdge(i) Then Continue For
                 For j As Integer = i + 1 To surfaceEdgeList.Count - 1
                     If surfaceEdgeList(i) = surfaceEdgeList(j) Then
@@ -245,7 +261,7 @@ Namespace Delaunay
                     End If
                 Next
             Next
-            For i = 0 To isRedundantEdge.Count - 1
+            For i As Integer = 0 To isRedundantEdge.Count - 1
                 If Not isRedundantEdge(i) Then mSurfaceEdges.Add(surfaceEdgeList(i))
             Next
         End Sub

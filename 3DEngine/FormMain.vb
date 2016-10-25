@@ -33,7 +33,7 @@ Public Class FormMain
         InitializeScene()
 
         'AddObjectsToScene_Sample1()
-        'ddObjectsToScene_Sample2()
+        'AddObjectsToScene_Sample2()
         'AddObjectsToScene_Sample3()
         AddObjectsToScene_Sample4()
 
@@ -56,7 +56,7 @@ Public Class FormMain
         r3D.RenderMode = RenderModes.ZBuffer 'Or RenderModes.ZBufferWireframe
         r3D.BackColor = Color.Black
         r3D.ZBufferWireframeColor = Color.White
-        r3D.ZBufferPixelSize = 2
+        r3D.ZBufferPixelSize = 3
         r3D.ZBufferColorDepth = True
         r3D.ZBufferTransparency = False
 
@@ -148,7 +148,7 @@ Public Class FormMain
 
     Private Sub AddObjectsToScene_Sample4()
         'r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere(14), Color.Blue))
-        r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere2(14, 20), Color.Blue))
+        r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere2(14, 35), Color.Blue))
     End Sub
 
     Private Sub RandomizesFacesColors(object3D As Object3D)
