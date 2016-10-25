@@ -115,9 +115,10 @@ Module DirectBitmapExtensions
     Public Sub Clear(dbmp As DirectBitmap, c As Color)
         Dim b() = {c.B, c.G, c.R, c.A}
         Dim bufferSize As Integer = dbmp.Height * dbmp.Width * 4 - 1
-        For i As Integer = 0 To bufferSize Step 4
-            Array.Copy(b, 0, dbmp.Bits, i, 4)
-        Next
+        Threading.Tasks.Parallel.For(0, bufferSize - 4, Sub(i As Integer)
+                                                            Array.Copy(b, 0, dbmp.Bits, i, 4)
+                                                            i += 3
+                                                        End Sub)
     End Sub
 
     <Extension()>

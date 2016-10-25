@@ -33,9 +33,9 @@ Public Class FormMain
         InitializeScene()
 
         'AddObjectsToScene_Sample1()
-        'AddObjectsToScene_Sample2()
+        AddObjectsToScene_Sample2()
         'AddObjectsToScene_Sample3()
-        AddObjectsToScene_Sample4()
+        'AddObjectsToScene_Sample4()
 
         Dim txt As String = ""
         For Each o In r3D.Objects3D
@@ -56,7 +56,7 @@ Public Class FormMain
         r3D.RenderMode = RenderModes.ZBuffer 'Or RenderModes.ZBufferWireframe
         r3D.BackColor = Color.Black
         r3D.ZBufferWireframeColor = Color.White
-        r3D.ZBufferPixelSize = 3
+        r3D.ZBufferPixelSize = 4
         r3D.ZBufferColorDepth = True
         r3D.ZBufferTransparency = False
 

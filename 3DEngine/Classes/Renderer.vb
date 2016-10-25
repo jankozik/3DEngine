@@ -180,7 +180,7 @@ Public Class Renderer
                     Next
                 End If
 
-                If True Then 'o3d.Value.IsValid AndAlso o3d.Value.IsSolid Then
+                If o3d.Value.IsValid AndAlso o3d.Value.IsSolid Then
                     For y = pf.Top + ZBufferPixelSize To pf.Bottom Step ZBufferPixelSize
                         For x = pf.Left + ZBufferPixelSize To pf.Right Step ZBufferPixelSize
                             If Not pf.Contains(x, y) Then Continue For
@@ -218,9 +218,9 @@ Public Class Renderer
     End Sub
 
     Private Sub ResetZBuffer()
-        For i As Integer = 0 To mZBuffer.Length - 1
-            mZBuffer(i) = Double.MaxValue
-        Next
+        Tasks.Parallel.For(0, mZBuffer.Length, Sub(i As Integer)
+                                                   mZBuffer(i) = Double.MaxValue
+                                               End Sub)
     End Sub
 
     ' Return Double.MaxValue if it's invalid, returns Z if otherwise
