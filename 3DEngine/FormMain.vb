@@ -110,8 +110,9 @@ Public Class FormMain
                                               End If
                                           End If
                                       Loop Until breakRenderingThread
-                                  End Sub)
-        renderThread.IsBackground = True
+                                  End Sub) With {
+                                    .IsBackground = True
+                                  }
         renderThread.Start()
     End Sub
 
@@ -153,16 +154,17 @@ Public Class FormMain
     End Sub
 
     Private Sub RandomizesFacesColors(object3D As Object3D)
-        Dim colors As New List(Of Color)
-        colors.Add(Color.Red)
-        colors.Add(Color.Blue)
-        colors.Add(Color.Green)
-        colors.Add(Color.Yellow)
-        colors.Add(Color.Magenta)
-        colors.Add(Color.Orange)
-        colors.Add(Color.Cyan)
-        colors.Add(Color.Gray)
-        colors.Add(Color.White)
+        Dim colors As New List(Of Color) From {
+            Color.Red,
+            Color.Blue,
+            Color.Green,
+            Color.Yellow,
+            Color.Magenta,
+            Color.Orange,
+            Color.Cyan,
+            Color.Gray,
+            Color.White
+        }
 
         'colors = Shuffle(colors)
 

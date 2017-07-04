@@ -218,9 +218,18 @@ Public Class Renderer
     End Sub
 
     Private Sub ResetZBuffer()
-        Tasks.Parallel.For(0, mZBuffer.Length, Sub(i As Integer)
-                                                   mZBuffer(i) = Double.MaxValue
-                                               End Sub)
+        'Tasks.Parallel.For(0, mZBuffer.Length, Sub(i As Integer)
+        '                                           mZBuffer(i) = Double.MaxValue
+        '                                       End Sub)
+
+        Dim degreeOfParallelism As Integer = Environment.ProcessorCount
+        Dim len As Integer = mZBuffer.Length
+        Tasks.Parallel.For(0, degreeOfParallelism, Sub(workerId As Integer)
+                                                       Dim max As Integer = len * (workerId + 1) / degreeOfParallelism
+                                                       For i As Integer = len * workerId / degreeOfParallelism To max - 1
+                                                           mZBuffer(i) = Double.MaxValue
+                                                       Next
+                                                   End Sub)
     End Sub
 
     ' Return Double.MaxValue if it's invalid, returns Z if otherwise

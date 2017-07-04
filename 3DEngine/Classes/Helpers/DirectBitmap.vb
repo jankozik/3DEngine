@@ -172,10 +172,23 @@ Module DirectBitmapExtensions
     <Extension>
     Public Sub Clear(dbmp As DirectBitmap, c As Color)
         Dim b() = {c.B, c.G, c.R, c.A}
-        Dim bufferSize As Integer = dbmp.Height * dbmp.Width * 4 - 1
-        For i As Integer = 0 To bufferSize Step 4
-            Array.Copy(b, 0, dbmp.Bits, i, 4)
-        Next
+        Dim bufferSize As Integer = dbmp.Height * dbmp.Width * 4
+        'For i As Integer = 0 To bufferSize - 1 Step 4
+        '    Array.Copy(b, 0, dbmp.Bits, i, 4)
+        'Next
+
+        ' This version is 10x faster
+        'https://stackoverflow.com/questions/12405938/save-time-with-parallel-for-loop
+        Dim degreeOfParallelism As Integer = Environment.ProcessorCount
+        Threading.Tasks.Parallel.For(0, degreeOfParallelism, Sub(workerId As Integer)
+                                                                 Dim f As Integer = bufferSize * workerId / degreeOfParallelism
+                                                                 f -= f Mod 4
+                                                                 Dim t As Integer = bufferSize * (workerId + 1) / degreeOfParallelism
+                                                                 t -= t Mod 4
+                                                                 For i As Integer = f To t - 1 Step 4
+                                                                     Array.Copy(b, 0, dbmp.Bits, i, 4)
+                                                                 Next
+                                                             End Sub)
     End Sub
 
     <Extension()>
