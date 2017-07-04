@@ -33,18 +33,18 @@ Public Class FormMain
         InitializeScene()
 
         'AddObjectsToScene_Sample1()
-        AddObjectsToScene_Sample2()
+        'AddObjectsToScene_Sample2()
         'AddObjectsToScene_Sample3()
-        'AddObjectsToScene_Sample4()
+        AddObjectsToScene_Sample4()
 
-        Dim txt As String = ""
-        For Each o In r3D.Objects3D
-            For Each v In o.Value.Vertices
-                txt += v.ToString() + Environment.NewLine
-            Next
-        Next
-        IO.File.WriteAllText(IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "sphere.txt"), txt)
-        r3D.Objects3D.ForEach(Sub(o3d) RandomizesFacesColors(o3d.Value))
+        'Dim txt As String = ""
+        'For Each o In r3D.Objects3D
+        '    For Each v In o.Value.Vertices
+        '        txt += v.ToString() + Environment.NewLine
+        '    Next
+        'Next
+        'IO.File.WriteAllText(IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "sphere.txt"), txt)
+        r3D.Objects3D.ForEach(Sub(o3d) RandomizeFacesColors(o3d.Value))
 
         StartRenderingThread()
     End Sub
@@ -110,8 +110,9 @@ Public Class FormMain
                                               End If
                                           End If
                                       Loop Until breakRenderingThread
-                                  End Sub)
-        renderThread.IsBackground = True
+                                  End Sub) With {
+                                    .IsBackground = True
+                                  }
         renderThread.Start()
     End Sub
 
@@ -124,7 +125,7 @@ Public Class FormMain
 
     Private Sub AddObjectsToScene_Sample1()
         r3D.Objects3D.Add("Cube", New Object3D(Primitives.Cube(8), Color.Blue))
-        'r3D.Objects3D("Cube").TransformRotate(45, 0, 0)
+        r3D.Objects3D("Cube").TransformRotate(45, 45, 0)
     End Sub
 
     Private Sub AddObjectsToScene_Sample2()
@@ -148,21 +149,22 @@ Public Class FormMain
     End Sub
 
     Private Sub AddObjectsToScene_Sample4()
-        'r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere(14), Color.Blue))
-        r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere2(14, 45), Color.Blue))
+        r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere(14), Color.Blue))
+        'r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere2(14), Color.Blue))
     End Sub
 
-    Private Sub RandomizesFacesColors(object3D As Object3D)
-        Dim colors As New List(Of Color)
-        colors.Add(Color.Red)
-        colors.Add(Color.Blue)
-        colors.Add(Color.Green)
-        colors.Add(Color.Yellow)
-        colors.Add(Color.Magenta)
-        colors.Add(Color.Orange)
-        colors.Add(Color.Cyan)
-        colors.Add(Color.Gray)
-        colors.Add(Color.White)
+    Private Sub RandomizeFacesColors(object3D As Object3D)
+        Dim colors As New List(Of Color) From {
+            Color.Red,
+            Color.Blue,
+            Color.Green,
+            Color.Yellow,
+            Color.Magenta,
+            Color.Orange,
+            Color.Cyan,
+            Color.Gray,
+            Color.White
+        }
 
         'colors = Shuffle(colors)
 

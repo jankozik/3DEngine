@@ -1,6 +1,6 @@
 ﻿' xFX JumpStart
 ' Xavier Flix (http://whenimbored.xfx.net)
-' 2013 - 2016
+' 2013 - 2017
 '
 '================================================================
 '
@@ -85,12 +85,9 @@ Namespace Delaunay
                 If vMin.Z > v.Z Then vMin.Z = v.Z
             Next
 
-            'Dim f As New Face(points)
-            'Dim tmp = f.Centroid
-
             Dim center As Point3d = 0.5 * (vMax - vMin)  ' Full external sphere center coordinates
             Dim r As Double = -1.0                       ' Radius
-            points.ForEach(Sub(v) If r < center.Distance(v) Then r = center.Distance(v))
+            points.ForEach(Sub(p) If r < center.Distance(p) Then r = center.Distance(p))
             r += 0.1                                     ' A little extra
 
             ' Obtain a tetrahedron circumscribing the sphere
@@ -102,30 +99,26 @@ Namespace Delaunay
             mTetras.Add(New Tetrahedron(outerTetra))
 
             Console.WriteLine("Analyzing points and generating tetrahedrons...")
-            For Each v In points.AsParallel()
+            For Each p As Point3d In points
                 ' Temporary lists for dynamically changing the geometry
                 Dim tmpTetrasList As New List(Of Tetrahedron)
                 Dim newTetrasList As New List(Of Tetrahedron)
 
-                Dim n As Integer = 0
-                Do
-                    If mTetras(n).IsValid AndAlso mTetras(n).Radius > v.Distance(mTetras(n).Center) Then
-                        tmpTetrasList.Add(mTetras(n))
-                        mTetras.RemoveAt(n)
-                    Else
-                        n += 1
-                    End If
-                Loop While n < mTetras.Count
+                For Each t As Tetrahedron In mTetras.AsParallel()
+                    If t.IsValid AndAlso t.Radius > p.Distance(t.Center) Then tmpTetrasList.Add(t)
+                Next
 
-                For Each t As Tetrahedron In tmpTetrasList.AsParallel()
+                For Each t As Tetrahedron In tmpTetrasList '.AsParallel()
+                    mTetras.Remove(t)
+
                     v1 = t.Vertices(0)
                     v2 = t.Vertices(1)
                     v3 = t.Vertices(2)
                     v4 = t.Vertices(3)
-                    newTetrasList.Add(New Tetrahedron(v1, v2, v3, v))
-                    newTetrasList.Add(New Tetrahedron(v1, v2, v4, v))
-                    newTetrasList.Add(New Tetrahedron(v1, v3, v4, v))
-                    newTetrasList.Add(New Tetrahedron(v2, v3, v4, v))
+                    newTetrasList.Add(New Tetrahedron(v1, v2, v3, p))
+                    newTetrasList.Add(New Tetrahedron(v1, v2, v4, p))
+                    newTetrasList.Add(New Tetrahedron(v1, v3, v4, p))
+                    newTetrasList.Add(New Tetrahedron(v2, v3, v4, p))
                 Next
 
                 Dim isRedundantTetra(newTetrasList.Count - 1) As Boolean
@@ -150,7 +143,7 @@ Namespace Delaunay
                     If Not isRedundantTetra(i) Then mTetras.Add(newTetrasList(i))
                 Next
 
-                Console.WriteLine($"    {points.IndexOf(v)} / {points.Count} ({points.IndexOf(v) / points.Count * 100:F2}) --> {mTetras.Count}")
+                Console.WriteLine($"    {points.IndexOf(p)} / {points.Count} ({points.IndexOf(p) / points.Count * 100:F2}) --> {mTetras.Count}")
             Next
 
             Console.WriteLine("Removing outer tetrahedrons...")
@@ -174,7 +167,7 @@ Namespace Delaunay
             Console.WriteLine("Adding edges...")
             mEdges.Clear()
             Dim isSame As Boolean
-            For Each t As Tetrahedron In mTetras.AsParallel()
+            For Each t As Tetrahedron In mTetras '.AsParallel()
                 For Each l1 As Line In t.Lines
                     isSame = False
                     For Each l2 In mEdges
@@ -189,7 +182,7 @@ Namespace Delaunay
 
             Console.WriteLine("Obtaining faces...")
             Dim triList As New List(Of Triangle)
-            For Each t As Tetrahedron In mTetras.AsParallel()
+            For Each t As Tetrahedron In mTetras '.AsParallel()
                 v1 = t.Vertices(0)
                 v2 = t.Vertices(1)
                 v3 = t.Vertices(2)
@@ -253,7 +246,6 @@ Namespace Delaunay
 
             Dim isRedundantEdge(surfaceEdgeList.Count - 1) As Boolean
             For i As Integer = 0 To surfaceEdgeList.Count - 2
-                'If isRedundantEdge(i) Then Continue For
                 For j As Integer = i + 1 To surfaceEdgeList.Count - 1
                     If surfaceEdgeList(i) = surfaceEdgeList(j) Then
                         isRedundantEdge(i) = True

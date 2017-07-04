@@ -22,7 +22,7 @@
     Private mEdges As New List(Of Line)
     Private mFaces As New List(Of Face)
     Private mIsValid As Boolean
-    Private Property mBounds As Bounds3D
+    Private mBounds As Bounds3D
 
     Private tessellator As New Triangualtor()
     Private mIsSolid As Boolean
@@ -137,7 +137,12 @@
 
     Private Sub UpdateObject()
         mVertices.Clear()
-        mFaces.ForEach(Sub(f) mVertices.AddRange(f.Vertices))
+        mFaces.ForEach(Sub(f)
+                           For Each v In f.Vertices
+                               If Not mVertices.Contains(v) Then mVertices.Add(v)
+                           Next
+                           'mVertices.AddRange(f.Vertices)
+                       End Sub)
 
         mEdges.Clear()
         Dim verticesCount As Integer
@@ -152,23 +157,23 @@
         Next
     End Sub
 
-    Private Sub InitShape(verts As List(Of Point3d), Optional triangulate As Boolean = True)
+    Private Sub InitShape(verts As List(Of Point3d), Optional triangulate As Boolean = True, Optional simplify As Boolean = True)
         ' Counter-clockwise Ordering
         ' http://stackoverflow.com/questions/8142388/in-what-order-should-i-send-my-vertices-to-opengl-for-culling
-
+        simplify = False
         ' http://www.openprocessing.org/sketch/31295
         If triangulate Then
             'verts = OrderPoints(verts)
             Console.WriteLine("Applying Delaunay triangulation")
             tessellator.Triangulate(verts)
-            Console.WriteLine("Simplifying geometry and extracting faces")
-            ExtractFaces(tessellator.Triangles, True)
+            Console.WriteLine($"{If(simplify, "Simplifying geometry and e", "E")}xtracting faces")
+            ExtractFaces(tessellator.Triangles, simplify)
         Else
             mFaces.Add(New Face(verts))
         End If
 
         UpdateObject()
-        Console.WriteLine($"{mVertices.Count:N0} vertices and {mFaces.Count:N0} faces")
+        Console.WriteLine($"{mVertices.Count:N0} vertices, {mEdges.Count:N0} edges and {mFaces.Count:N0} faces")
 
         ' Euler's number and closed surfaces
         ' For closed surfaces V - E + F = 2
@@ -249,7 +254,7 @@
             For Each t1 In triangles
                 Dim nf As New Face(t1.Normal)
                 nf.Vertices.AddRange(t1.Vertices)
-                mFaces.Add(nf)
+                If Not mFaces.Contains(nf) Then mFaces.Add(nf)
             Next
         End If
     End Sub

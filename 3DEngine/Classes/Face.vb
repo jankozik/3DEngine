@@ -1,4 +1,6 @@
 ﻿Public Class Face
+    Implements IEquatable(Of Face)
+
     Private mArea As Double
     Private mNormal As New Point3d()
     Private mZ As Double
@@ -218,5 +220,25 @@
 
     Public Overrides Function ToString() As String
         Return String.Format($"{Vertices.Count} Vertices, Normal: {mNormal}, Z: {mZ:F2}")
+    End Function
+
+    Public Shared Operator =(f1 As Face, f2 As Face) As Boolean
+        Dim counter As Integer = 0
+
+        For Each v1 As Point3d In f1.Vertices
+            For Each v2 As Point3d In f2.Vertices
+                If v1 = v2 Then counter += 1
+            Next
+        Next
+
+        Return counter = 4
+    End Operator
+
+    Public Shared Operator <>(f1 As Face, f2 As Face) As Boolean
+        Return Not (f1 = f2)
+    End Operator
+
+    Public Shadows Function Equals(other As Face) As Boolean Implements IEquatable(Of Face).Equals
+        Return Me = other
     End Function
 End Class

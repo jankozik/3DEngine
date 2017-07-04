@@ -46,9 +46,9 @@
             Dim lines2() As Line = t2.Lines
 
             Dim counter As Integer = 0
-            For i As Integer = 0 To lines1.Length - 1
-                For j As Integer = 0 To lines2.Length - 1
-                    If lines1(i) = lines2(j) Then counter += 1
+            For Each l1 As Line In lines1
+                For Each l2 As Line In lines2
+                    If l1 = l2 Then counter += 1
                 Next
             Next
 

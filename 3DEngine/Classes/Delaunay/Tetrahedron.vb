@@ -71,7 +71,7 @@
                 }
 
             Dim x(3 - 1) As Double
-            If Math.Abs(Gauss(a, b, x)) <= Triangualtor.Epsilon Then
+            If Gauss(a, b, x) = 0 Then
                 mIsValid = False
             Else
                 mIsValid = True

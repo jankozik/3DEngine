@@ -92,8 +92,8 @@ Public Class Primitives
             z = -Math.Cos(ca / radius * Point3d.ToRad) * radius
 
             vertices.Add(New Point3d(r * Math.Cos(ca * Point3d.ToRad),
-                                r * Math.Sin(ca * Point3d.ToRad),
-                                z))
+                                     r * Math.Sin(ca * Point3d.ToRad),
+                                     z))
 
             ca += angleStep
         Loop While Math.Abs(z - radius) > Triangualtor.Epsilon
