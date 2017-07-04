@@ -56,7 +56,7 @@ Public Class FormMain
         r3D.RenderMode = RenderModes.ZBuffer 'Or RenderModes.ZBufferWireframe
         r3D.BackColor = Color.Black
         r3D.ZBufferWireframeColor = Color.White
-        r3D.ZBufferPixelSize = 4
+        r3D.ZBufferPixelSize = 2
         r3D.ZBufferColorDepth = True
         r3D.ZBufferTransparency = False
 
@@ -87,10 +87,11 @@ Public Class FormMain
 
     Private Sub StartRenderingThread()
         renderThread = New Thread(Sub()
-                                      Dim frameRate As Integer = 30
+                                      Const frameRate As Integer = 30
                                       Dim delay As Integer = 1000 / frameRate
                                       Dim delayCounter As Integer
                                       Dim sw As New Stopwatch()
+
                                       Do
                                           sw.Restart()
                                           SyncLock syncObj
@@ -148,7 +149,7 @@ Public Class FormMain
 
     Private Sub AddObjectsToScene_Sample4()
         'r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere(14), Color.Blue))
-        r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere2(14, 35), Color.Blue))
+        r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere2(14, 45), Color.Blue))
     End Sub
 
     Private Sub RandomizesFacesColors(object3D As Object3D)

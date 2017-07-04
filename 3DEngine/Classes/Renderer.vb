@@ -272,6 +272,10 @@ Public Class Renderer
                           colorDepth * c.G,
                           colorDepth * c.B)
 
+            ' TODO: Implement an averaging function so that instead of averaging with the previous pixel,
+            '       the new one is averaged with all the surrounding ones. (Cheap anti-aliasing)
+            'c.Add(GetZPixel(x, y, z))
+
             For y1 As Integer = y To y + ZBufferPixelSize
                 For x1 As Integer = x To x + ZBufferPixelSize
                     Surface.Pixel(x1, y1) = c
@@ -279,6 +283,28 @@ Public Class Renderer
             Next
         End If
     End Sub
+
+    Private Function GetZPixel(x As Integer, y As Integer, z As Integer) As Color
+        Dim a As Integer
+        Dim r As Integer
+        Dim g As Integer
+        Dim b As Integer
+        Dim n As Integer
+
+        Dim c As Color
+        For y1 As Integer = y To y + ZBufferPixelSize
+            For x1 As Integer = x To x + ZBufferPixelSize
+                c = Surface.Pixel(x1, y1)
+                a += c.A
+                r += c.R
+                g += c.G
+                b += c.B
+                n += 1
+            Next
+        Next
+
+        Return Color.FromArgb(a / n, r / n, g / n, b / n)
+    End Function
 
     Private Sub RenderZLine(c1 As Color, p1 As Point3d, c2 As Color, p2 As Point3d, minZ As Double, maxZ As Double)
         Dim dx As Double = p2.X - p1.X

@@ -26,8 +26,35 @@ Public Class DirectBitmap
         ReDim Bits(bufferSize)
 
         bitsHandle = GCHandle.Alloc(Bits, GCHandleType.Pinned)
-        Me.Bitmap = New Bitmap(w, h, w4, PixelFormat.Format32bppPArgb,
-                               bitsHandle.AddrOfPinnedObject())
+        Me.Bitmap = New Bitmap(w, h, w4, PixelFormat.Format32bppPArgb, bitsHandle.AddrOfPinnedObject())
+    End Sub
+
+    Public Sub New(bmp As Bitmap)
+        Me.New(bmp.Width, bmp.Height)
+
+        Dim sourceData As BitmapData = bmp.LockBits(New Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadWrite, bmp.PixelFormat)
+        Dim sourcePointer As IntPtr = sourceData.Scan0
+        Dim sourceStride As Integer = sourceData.Stride
+        Dim srcBytesPerPixel As Integer = sourceStride \ bmp.Width
+        Dim srcOffset As Integer
+
+        Dim a As Integer
+        Dim pa As Double
+
+        For y As Integer = 0 To bmp.Height - 1
+            For x As Integer = 0 To bmp.Width - 1
+                srcOffset = x * srcBytesPerPixel + y * sourceStride
+
+                a = If(srcBytesPerPixel = 4, Marshal.ReadByte(sourcePointer, srcOffset + 3), 255)
+                pa = a / 255
+                Pixel(x, y) = Color.FromArgb(a,
+                                             Marshal.ReadByte(sourcePointer, srcOffset + 2) * pa,
+                                             Marshal.ReadByte(sourcePointer, srcOffset + 1) * pa,
+                                             Marshal.ReadByte(sourcePointer, srcOffset + 0) * pa)
+            Next
+        Next
+
+        bmp.UnlockBits(sourceData)
     End Sub
 
     Public Shared Widening Operator CType(bmp As Bitmap) As DirectBitmap
@@ -39,6 +66,11 @@ Public Class DirectBitmap
         End Using
 
         Return dbmp
+    End Operator
+
+    Public Shared Narrowing Operator CType(dbmp As DirectBitmap) As Bitmap
+        If dbmp Is Nothing Then Return Nothing
+        Return dbmp.Bitmap
     End Operator
 
     Public Property Pixel(x As Integer, y As Integer) As Color
@@ -57,20 +89,46 @@ Public Class DirectBitmap
             Bits(offset + 2) = value.R
             Bits(offset + 1) = value.G
             Bits(offset + 0) = value.B
-
-            ' Preliminary transparency support
-            'Dim p As Double = 1.0 - value.A / 255.0
-            'Bits(offset + 3) = Bits(offset + 3) * p Or value.A
-            'Bits(offset + 2) = Bits(offset + 2) * p Or value.R
-            'Bits(offset + 1) = Bits(offset + 1) * p Or value.G
-            'Bits(offset + 0) = Bits(offset + 0) * p Or value.B
         End Set
     End Property
 
-    Public Shared Narrowing Operator CType(dbmp As DirectBitmap) As Bitmap
-        If dbmp Is Nothing Then Return Nothing
-        Return dbmp.Bitmap
-    End Operator
+    Public Property Pixel2(x As Integer, y As Integer) As Color
+        Get
+            If x < 0 OrElse x >= Width OrElse y < 0 OrElse y >= Height Then Exit Property
+            Dim offset As Integer = y * w4 + x * 4
+            Return Color.FromArgb(Bits(offset + 3),
+                                  Bits(offset + 2),
+                                  Bits(offset + 1),
+                                  Bits(offset + 0))
+        End Get
+        Set(value As Color)
+            If x < 0 OrElse x >= Width OrElse y < 0 OrElse y >= Height Then Exit Property
+            Dim offset As Integer = y * w4 + x * 4
+
+            Dim A As Integer = Bits(offset + 3)
+            Dim R As Integer = Bits(offset + 2)
+            Dim G As Integer = Bits(offset + 1)
+            Dim B As Integer = Bits(offset + 0)
+
+            Dim A1p As Double = value.A / 256.0
+            Dim A2p As Double = A / 256.0
+            Dim OA As Double = GetAlpha(A1p, A2p)
+
+            Bits(offset + 3) = Int(OA * 255)
+            Bits(offset + 2) = ApplyAlpha(value.R, R, A1p, A2p, OA)
+            Bits(offset + 1) = ApplyAlpha(value.G, G, A1p, A2p, OA)
+            Bits(offset + 0) = ApplyAlpha(value.B, B, A1p, A2p, OA)
+        End Set
+    End Property
+
+    Private Function ApplyAlpha(c1 As Integer, c2 As Integer, a1p As Double, a2p As Double, a As Double) As Integer
+        If a = 0 Then Return 0
+        Return Int((c1 * a1p + c2 * a2p * (1 - a1p)) * a)
+    End Function
+
+    Private Function GetAlpha(a1p As Double, a2p As Double) As Double
+        Return (a1p + a2p * (1 - a1p))
+    End Function
 
 #Region "IDisposable Support"
     Private disposedValue As Boolean ' To detect redundant calls
@@ -115,10 +173,9 @@ Module DirectBitmapExtensions
     Public Sub Clear(dbmp As DirectBitmap, c As Color)
         Dim b() = {c.B, c.G, c.R, c.A}
         Dim bufferSize As Integer = dbmp.Height * dbmp.Width * 4 - 1
-        Threading.Tasks.Parallel.For(0, bufferSize - 4, Sub(i As Integer)
-                                                            Array.Copy(b, 0, dbmp.Bits, i, 4)
-                                                            i += 3
-                                                        End Sub)
+        For i As Integer = 0 To bufferSize Step 4
+            Array.Copy(b, 0, dbmp.Bits, i, 4)
+        Next
     End Sub
 
     <Extension()>
@@ -155,5 +212,19 @@ Module DirectBitmapExtensions
             pi(i) = New Point(p(i).X, p(i).Y)
         Next
         dbmp.DrawPolygon(c, pi)
+    End Sub
+
+    <Extension()>
+    Public Sub FillRectangle(dbmp As DirectBitmap, c As Color, r As Rectangle)
+        FillRectangle(dbmp, c, r.X, r.Y, r.Width, r.Height)
+    End Sub
+
+    <Extension()>
+    Public Sub FillRectangle(dbmp As DirectBitmap, c As Color, x As Integer, y As Integer, w As Integer, h As Integer)
+        For x1 As Integer = x To x + w - 1
+            For y1 As Integer = y To y + h - 1
+                dbmp.Pixel(x1, y1) = c
+            Next
+        Next
     End Sub
 End Module

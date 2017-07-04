@@ -5,11 +5,12 @@ Imports System.Windows.Media.Imaging
 ' Unfortunately, this doesn't work :(
 ' It looks like GifBitmapEncoder is only useful to read GIF files, not write them...
 Public Class GifEncoder
-    Private gEnc As New GifBitmapEncoder()
-
     Public ReadOnly Property FramesDelay As Integer
 
-    Public Sub New(Optional framesDelay As Integer = 0)
+#If EnableGIFEncoder Then
+    Private gEnc As New GifBitmapEncoder()
+
+    Public Sub New(Optional framesDelay As Integer = 33)
         Me.FramesDelay = framesDelay
 
         'gEnc.Metadata = New BitmapMetadata("gif")
@@ -34,4 +35,14 @@ Public Class GifEncoder
         End Using
         gEnc.Frames.Clear()
     End Sub
+#Else
+    Public Sub New(Optional framesDelay As Integer = 33)
+    End Sub
+
+    Public Sub Save(fileName As String)
+    End Sub
+
+    Public Sub AddImage(img As Bitmap)
+    End Sub
+#End If
 End Class
