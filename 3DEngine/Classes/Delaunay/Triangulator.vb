@@ -108,7 +108,7 @@ Namespace Delaunay
                     If t.IsValid AndAlso t.Radius > p.Distance(t.Center) Then tmpTetrasList.Add(t)
                 Next
 
-                For Each t As Tetrahedron In tmpTetrasList '.AsParallel()
+                For Each t As Tetrahedron In tmpTetrasList
                     mTetras.Remove(t)
 
                     v1 = t.Vertices(0)
@@ -166,23 +166,15 @@ Namespace Delaunay
 
             Console.WriteLine("Adding edges...")
             mEdges.Clear()
-            Dim isSame As Boolean
-            For Each t As Tetrahedron In mTetras '.AsParallel()
+            For Each t As Tetrahedron In mTetras
                 For Each l1 As Line In t.Lines
-                    isSame = False
-                    For Each l2 In mEdges
-                        If l1 = l2 Then
-                            isSame = True
-                            Exit For
-                        End If
-                    Next
-                    If Not isSame Then mEdges.Add(l1)
+                    If Not mEdges.Contains(l1) Then mEdges.Add(l1)
                 Next
             Next
 
             Console.WriteLine("Obtaining faces...")
             Dim triList As New List(Of Triangle)
-            For Each t As Tetrahedron In mTetras '.AsParallel()
+            For Each t As Tetrahedron In mTetras
                 v1 = t.Vertices(0)
                 v2 = t.Vertices(1)
                 v3 = t.Vertices(2)

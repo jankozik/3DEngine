@@ -33,9 +33,9 @@ Public Class FormMain
         InitializeScene()
 
         'AddObjectsToScene_Sample1()
-        'AddObjectsToScene_Sample2()
+        AddObjectsToScene_Sample2()
         'AddObjectsToScene_Sample3()
-        AddObjectsToScene_Sample4()
+        'AddObjectsToScene_Sample4()
 
         'Dim txt As String = ""
         'For Each o In r3D.Objects3D
@@ -56,7 +56,7 @@ Public Class FormMain
         r3D.RenderMode = RenderModes.ZBuffer 'Or RenderModes.ZBufferWireframe
         r3D.BackColor = Color.Black
         r3D.ZBufferWireframeColor = Color.White
-        r3D.ZBufferPixelSize = 2
+        r3D.ZBufferPixelSize = 4
         r3D.ZBufferColorDepth = True
         r3D.ZBufferTransparency = False
 
@@ -217,7 +217,7 @@ Public Class FormMain
         Return list
     End Function
 
-    Private Sub Main_Paint(sender As Object, e As System.Windows.Forms.PaintEventArgs) Handles Me.Paint
+    Private Sub FormMain_Paint(sender As Object, e As System.Windows.Forms.PaintEventArgs) Handles Me.Paint
         Dim g As Graphics = e.Graphics
         'g.SmoothingMode = SmoothingMode.AntiAlias 
         'g.InterpolationMode = InterpolationMode.Bicubic
@@ -234,12 +234,17 @@ Public Class FormMain
                 End If
                 g.DrawString("Recording", Me.Font, Brushes.Red, Point.Empty)
             End If
+
+#If DEBUG Then
+            g.DrawString($"Objects: {r3D.Objects3D.Count}", Me.Font, Brushes.White, 5, 5)
+            g.DrawString($"Triangles: {r3D.Objects3D.Sum(Function(o) o.Value.Triangles.Count)}", Me.Font, Brushes.White, 5, 20)
+#End If
         End SyncLock
         'DrawAxis(g)
 
-        If r3D.Objects3D.ContainsKey("Sphere") Then
-            'r3D.Objects3D("Sphere").TransformRotate(2.0, 2.5, -1.0)
-        End If
+        'If r3D.Objects3D.ContainsKey("Sphere") Then
+        'r3D.Objects3D("Sphere").TransformRotate(2.0, 2.5, -1.0)
+        'End If
     End Sub
 
     Private Sub DrawAxis(g As Graphics)

@@ -22,7 +22,6 @@
             End Get
         End Property
 
-
         Public Shared Operator =(l1 As Line, l2 As Line) As Boolean
             Return (l1.Start = l2.Start AndAlso l1.End = l2.End) OrElse
                    (l1.Start = l2.End AndAlso l1.End = l2.Start)

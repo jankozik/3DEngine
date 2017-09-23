@@ -101,10 +101,10 @@
 
     Public Sub TransformMove(dx As Double, dy As Double, dz As Double)
         For Each f In mFaces
-            For Each p In f.Vertices
-                p.X += dx
-                p.Y += dy
-                p.Z += dz
+            For Each v In f.Vertices
+                v.X += dx
+                v.Y += dy
+                v.Z += dz
             Next
         Next
 
@@ -160,7 +160,7 @@
     Private Sub InitShape(verts As List(Of Point3d), Optional triangulate As Boolean = True, Optional simplify As Boolean = True)
         ' Counter-clockwise Ordering
         ' http://stackoverflow.com/questions/8142388/in-what-order-should-i-send-my-vertices-to-opengl-for-culling
-        simplify = False
+        'simplify = False
         ' http://www.openprocessing.org/sketch/31295
         If triangulate Then
             'verts = OrderPoints(verts)
@@ -178,6 +178,7 @@
         ' Euler's number and closed surfaces
         ' For closed surfaces V - E + F = 2
         mIsValid = (verts.Count - mEdges.Count + mFaces.Count = 2)
+        'mIsValid = True
     End Sub
 
     Private Sub ExtractFaces(triangles As List(Of Triangle), simplify As Boolean)
