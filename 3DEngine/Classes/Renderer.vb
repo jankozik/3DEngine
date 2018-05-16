@@ -24,9 +24,17 @@ Public Class Renderer
     Private mZBuffer() As Double ' ZBufferData
     Private mZBufferTransparency As Boolean = False
     Private mZBufferColorDepth As Boolean = True
+    Private mFramesPerSecond As Integer
     Public Property Surface As DirectBitmap
 
     Private txtFont As New Font("Consolas", 12, FontStyle.Bold)
+
+    Private timer As Stopwatch
+    Private framesCounter As Integer
+
+    Public Sub New()
+        timer = Stopwatch.StartNew()
+    End Sub
 
     Public ReadOnly Property ZBuffer As Double()
         Get
@@ -112,7 +120,15 @@ Public Class Renderer
     '                              End Function)
     'End Function
 
+    Public ReadOnly Property FramesPerSecond As Double
+        Get
+            Return framesCounter / (timer.ElapsedMilliseconds / 1000)
+        End Get
+    End Property
+
     Public Sub Render(clear As Boolean)
+        framesCounter += 1
+
         If clear Then Surface.Clear(BackColor)
 
         For Each rm As RenderModes In [Enum].GetValues(GetType(RenderModes))

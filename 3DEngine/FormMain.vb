@@ -56,7 +56,7 @@ Public Class FormMain
         r3D.RenderMode = RenderModes.ZBuffer 'Or RenderModes.ZBufferWireframe
         r3D.BackColor = Color.Black
         r3D.ZBufferWireframeColor = Color.White
-        r3D.ZBufferPixelSize = 4
+        r3D.ZBufferPixelSize = 3
         r3D.ZBufferColorDepth = True
         r3D.ZBufferTransparency = False
 
@@ -235,10 +235,11 @@ Public Class FormMain
                 g.DrawString("Recording", Me.Font, Brushes.Red, Point.Empty)
             End If
 
-#If DEBUG Then
-            g.DrawString($"Objects: {r3D.Objects3D.Count}", Me.Font, Brushes.White, 5, 5)
-            g.DrawString($"Triangles: {r3D.Objects3D.Sum(Function(o) o.Value.Triangles.Count)}", Me.Font, Brushes.White, 5, 20)
-#End If
+
+            g.DrawString($"Objects: {r3D.Objects3D.Count}", Me.Font, Brushes.White, 5, 5 + 15 * 0)
+            g.DrawString($"Triangles: {r3D.Objects3D.Sum(Function(o) o.Value.Triangles.Count)}", Me.Font, Brushes.White, 5, 5 + 15 * 1)
+            g.DrawString($"FPS: {r3D.FramesPerSecond:N2}", Me.Font, Brushes.White, 5, 5 + 15 * 2)
+
         End SyncLock
         'DrawAxis(g)
 
