@@ -6,14 +6,12 @@ Public Class FormMain
     Private mouseOrigin As Point
     Private isMouseLeftButtonDown As Boolean
     Private isMouseRightButtonDown As Boolean
-    Private renderThread As Thread
 
     Private r3D As New Renderer()
 
     Private gifAnim As New GifEncoder(100)
     Private gifAnimEnable As Boolean = False
     Private captureFrame As Boolean
-    Private breakRenderingThread As Boolean
     Private randomizeColors As Boolean = True
 
     Private syncObj As New Object()
@@ -66,11 +64,6 @@ Public Class FormMain
     End Sub
 
     Private Sub CreateEventHandlers()
-        AddHandler Me.FormClosing, Sub()
-                                       SyncLock syncObj
-                                           breakRenderingThread = True
-                                       End SyncLock
-                                   End Sub
         AddHandler Me.SizeChanged, Sub() SetSurfaceSize()
         AddHandler Me.KeyDown, Sub(s1 As Object, e1 As KeyEventArgs)
                                    If e1.KeyCode = Keys.Enter Then
@@ -88,34 +81,35 @@ Public Class FormMain
     End Sub
 
     Private Sub StartRenderingThread()
-        renderThread = New Thread(Sub()
-                                      Const frameRate As Integer = 30
-                                      Dim delay As Integer = 1000 / frameRate
-                                      Dim delayCounter As Integer
-                                      Dim sw As New Stopwatch()
+        Const frameRate As Integer = 30
+        Dim delay As Integer = 1000 / frameRate
+        Dim sw As New Stopwatch()
+#If EnableGIFEncoder Then
+        Dim delayCounter As Integer
+#End If
 
-                                      Do
-                                          sw.Restart()
-                                          SyncLock syncObj
-                                              r3D.Render(True)
-                                          End SyncLock
-                                          sw.Stop()
+        Task.Run(Sub()
+                     Do
+                         sw.Restart()
+                         SyncLock syncObj
+                             r3D.Render(True)
+                         End SyncLock
+                         sw.Stop()
 
-                                          Thread.Sleep(Math.Max(0, delay - sw.ElapsedMilliseconds))
-                                          Me.Invalidate()
+                         Me.Invalidate()
+                         Thread.Sleep(Math.Max(0, delay - sw.ElapsedMilliseconds))
 
-                                          If gifAnimEnable Then
-                                              delayCounter += delay
-                                              If delayCounter >= gifAnim.FramesDelay Then
-                                                  captureFrame = True
-                                                  delayCounter = 0
-                                              End If
-                                          End If
-                                      Loop Until breakRenderingThread
-                                  End Sub) With {
-                                    .IsBackground = True
-                                  }
-        renderThread.Start()
+#If EnableGIFEncoder Then
+                         If gifAnimEnable Then
+                             delayCounter += delay
+                             If delayCounter >= gifAnim.FramesDelay Then
+                                 captureFrame = True
+                                 delayCounter = 0
+                             End If
+                         End If
+#End If
+                     Loop
+                 End Sub)
     End Sub
 
     Private Sub SetSurfaceSize()
@@ -165,7 +159,7 @@ Public Class FormMain
                                                Color.White,     ' TOP
                                                Color.Yellow,    ' BOTTOM
                                                Color.Blue,      ' BACK
-                                               Color.Blue}      ' LEFT
+                                               Color.Orange}    ' LEFT
 
         randomizeColors = False
         r3D.ZBufferPixelSize = 2
@@ -187,10 +181,27 @@ Public Class FormMain
                         End Select
                         If paintFace Then c.Faces(i).Color = colors(i)
                     Next
+
+                    ' This improves performance but reduces rendering quality due to color bleeding...
+                    'Dim isDone As Boolean
+                    'Do
+                    '    isDone = True
+                    '    For i As Integer = 0 To c.Faces.Count - 1
+                    '        If c.Faces(i).Color = Color.Black Then
+                    '            c.Faces.RemoveAt(i)
+                    '            isDone = False
+                    '            Exit For
+                    '        End If
+                    '    Next
+                    'Loop Until isDone
+
                     r3D.Objects3D.Add($"Cubie{x}{y}{z}", c)
                 Next
             Next
         Next
+
+        r3D.AngleX += 45
+        r3D.AngleY -= 45
     End Sub
 
     Private Sub RandomizeFacesColors(object3D As Object3D)
@@ -279,7 +290,6 @@ Public Class FormMain
             g.DrawString($"Objects: {r3D.Objects3D.Count}", Me.Font, Brushes.White, 5, 5 + 15 * 0)
             g.DrawString($"Triangles: {r3D.Objects3D.Sum(Function(o) o.Value.Triangles.Count)}", Me.Font, Brushes.White, 5, 5 + 15 * 1)
             g.DrawString($"FPS: {r3D.FramesPerSecond:N2}", Me.Font, Brushes.White, 5, 5 + 15 * 2)
-
         End SyncLock
         'DrawAxis(g)
 
@@ -347,8 +357,6 @@ Public Class FormMain
     End Sub
 
     Private Sub FormMain_MouseWheel(sender As Object, e As MouseEventArgs) Handles Me.MouseWheel
-        'r3D.Distance -= e.Delta / 30
-        'r3D.FOV -= e.Delta / 30
         SyncLock syncObj
             r3D.Camera.Z += e.Delta / 30
         End SyncLock

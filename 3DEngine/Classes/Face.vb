@@ -113,31 +113,6 @@
         mCentroid.X = Vertices.Average(Function(v) v.X)
         mCentroid.Y = Vertices.Average(Function(v) v.Y)
         mCentroid.Z = Vertices.Average(Function(v) v.Z)
-
-        'Dim cx As Double = 0
-        'Dim cy As Double = 0
-        'Dim cz As Double = 0
-
-        'Dim j As Integer
-        'Dim n = Vertices.Count
-
-        'Dim factor As Double = 0
-        'For i As Integer = 0 To n - 1
-        '    j = (i + 1) Mod n
-        '    factor = (Vertices(i).X * Vertices(j).Y - Vertices(j).X * Vertices(i).Y)
-        '    cx += (Vertices(i).X + Vertices(j).X) * factor
-        '    cy += (Vertices(i).Y + Vertices(j).Y) * factor
-        '    cz += (Vertices(i).Z + Vertices(j).Z) * factor
-        'Next
-
-        'Dim a = mArea * 6.0F
-        'factor = 1 / a
-
-        'cx *= factor
-        'cy *= factor
-        'cz *= factor
-
-        'mCentroid = New Point3d(cx, cy, cz)
     End Sub
 
     Private Sub UpdateArea()
@@ -152,15 +127,17 @@
         mArea /= 2.0
     End Sub
 
-    ' Newell's Method
-    ' http://www.opengl.org/wiki/Calculating_a_Surface_Normal
+    ' Newell's Method: http://www.opengl.org/wiki/Calculating_a_Surface_Normal
     Private Sub UpdateNormal()
+        Dim v1 As Point3d
+        Dim v2 As Point3d
+        Dim n As Integer = Vertices.Count
+
         mNormal = New Point3d()
 
-        Dim n As Integer = Vertices.Count
         For i As Integer = 0 To n - 1
-            Dim v1 = Vertices(i)
-            Dim v2 = Vertices((i + 1) Mod n)
+            v1 = Vertices(i)
+            v2 = Vertices((i + 1) Mod n)
 
             mNormal += v1.Cross(v2)
             mNormal.Normalize()

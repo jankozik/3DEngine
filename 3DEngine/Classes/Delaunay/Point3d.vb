@@ -1,4 +1,6 @@
-﻿Namespace Delaunay
+﻿Imports System.Runtime.InteropServices
+
+Namespace Delaunay
     Public Class Point3d
         Implements IEquatable(Of Point3d)
 
@@ -25,11 +27,14 @@
         End Sub
 
         Public Function Distance(p As Point3d) As Double
-            Return Math.Sqrt((X - p.X) ^ 2 + (Y - p.Y) ^ 2 + (Z - p.Z) ^ 2)
+            Dim dx As Double = X - p.X
+            Dim dy As Double = Y - p.Y
+            Dim dz As Double = Z - p.Z
+            Return Math.Sqrt(dx * dx + dy * dy + dz * dz)
         End Function
 
         Public Function Length() As Double
-            Return Math.Sqrt(X ^ 2 + Y ^ 2 + Z ^ 2)
+            Return Math.Sqrt(X * X + Y * Y + Z * Z)
         End Function
 
         Public Function Dot(p As Point3d) As Double
@@ -62,30 +67,24 @@
         End Function
 
         Public Function RotateX(a As Double) As Point3d
-            Dim rad As Double = a * ToRad
-            Dim cosa As Double = Math.Cos(rad)
-            Dim sina As Double = Math.Sin(rad)
-            Dim yn As Double = Y * cosa - Z * sina
-            Dim zn As Double = Y * sina + Z * cosa
-            Return New Point3d(X, yn, zn)
+            Dim arad As Double = a * ToRad
+            Dim cosa As Double = Math.Cos(arad)
+            Dim sina As Double = Math.Sin(arad)
+            Return New Point3d(X, Y * cosa - Z * sina, Y * sina + Z * cosa)
         End Function
 
         Public Function RotateY(a As Double) As Point3d
-            Dim rad As Double = a * ToRad
-            Dim cosa As Double = Math.Cos(rad)
-            Dim sina As Double = Math.Sin(rad)
-            Dim xn As Double = Z * sina + X * cosa
-            Dim zn As Double = Z * cosa - X * sina
-            Return New Point3d(xn, Y, zn)
+            Dim arad As Double = a * ToRad
+            Dim cosa As Double = Math.Cos(arad)
+            Dim sina As Double = Math.Sin(arad)
+            Return New Point3d(Z * sina + X * cosa, Y, Z * cosa - X * sina)
         End Function
 
         Public Function RotateZ(a As Double) As Point3d
-            Dim rad As Double = a * ToRad
-            Dim cosa As Double = Math.Cos(rad)
-            Dim sina As Double = Math.Sin(rad)
-            Dim xn As Double = X * cosa - Y * sina
-            Dim yn As Double = X * sina + Y * cosa
-            Return New Point3d(xn, yn, Z)
+            Dim arad As Double = a * ToRad
+            Dim cosa As Double = Math.Cos(arad)
+            Dim sina As Double = Math.Sin(arad)
+            Return New Point3d(X * cosa - Y * sina, X * sina + Y * cosa, Z)
         End Function
 
         Public Function Project(viewWidth As Integer, viewheight As Integer, fov As Double, viewDistance As Double) As Point3d
@@ -148,9 +147,9 @@
         End Function
 
         Public Function AsInt(Optional padding As Integer = 0) As Point3d
-            Dim X1 As Integer = Math.Round(X)
-            Dim Y1 As Integer = Math.Round(Y)
-            Dim Z1 As Integer = Math.Round(Z)
+            Dim X1 As Integer = X
+            Dim Y1 As Integer = Y
+            Dim Z1 As Integer = Z
 
             If padding > 1 Then
                 X1 -= X1 Mod padding
@@ -162,7 +161,7 @@
         End Function
 
         Public Function Compare(p As Point3d) As Integer
-            Return Me.Length.CompareTo(p.Length)
+            Return Length.CompareTo(p.Length)
         End Function
 
         Public Shadows Function Equals(other As Point3d) As Boolean Implements IEquatable(Of Point3d).Equals
@@ -176,30 +175,34 @@
         End Function
 
         Public Function AngleXY(p As Point3d) As Double
-            Dim dx As Double = p.X - X
-            Dim dy As Double = p.Y - Y
-
-            Dim a As Double = Math.Atan2(dy, dx) * ToDeg
+            Dim a As Double = Math.Atan2(p.Y - Y, p.X - X) * ToDeg
             If a < 0 Then a += 360.0
             Return a
         End Function
 
         Public Function AngleXZ(p As Point3d) As Double
-            Dim dx As Double = p.X - X
-            Dim dz As Double = p.Z - Z
-
-            Dim a As Double = Math.Atan2(dz, dx) * ToDeg
+            Dim a As Double = Math.Atan2(p.Z - Z, p.X - X) * ToDeg
             If a < 0 Then a += 360.0
             Return a
         End Function
 
         Public Function AngleYZ(p As Point3d) As Double
-            Dim dy As Double = p.Y - Y
-            Dim dz As Double = p.Z - Z
-
-            Dim a As Double = Math.Atan2(dz, dy) * ToDeg
+            Dim a As Double = Math.Atan2(p.Z - Z, p.Y - Y) * ToDeg
             If a < 0 Then a += 360.0
             Return a
         End Function
+
+        ' Unfortunately, this doesn't seem to improve squat!
+        'Private Const PI2 As Double = Math.PI / 2
+        'Private Const B As Double = 4 / Math.PI
+        'Private Const C As Double = -4 / (Math.PI * Math.PI)
+
+        'Public Shared Function FastSin(a As Double) As Double
+        '    Return B * a + C * a * Math.Abs(a)
+        'End Function
+
+        'Public Shared Function FastCos(a As Double) As Double
+        '    Return FastSin(a + PI2)
+        'End Function
     End Class
 End Namespace

@@ -18,13 +18,16 @@ Public Class Renderer
     Public Property BackColor As Color = Color.Black
     Public Property ZBufferWireframeColor As Color = Color.Black
 
+    Private pVertices As New List(Of Point3d)
+    Private uVertices As New List(Of Point3d)
+
     Private mObjects3D As New Objects3DCollection()
     Private mCamera As New Point3d()
     Private mSurfaceSize As New SizeF(1.0, 1.0)
     Private mZBuffer() As Double ' ZBufferData
     Private mZBufferTransparency As Boolean = False
     Private mZBufferColorDepth As Boolean = True
-    Private mFramesPerSecond As Integer
+
     Public Property Surface As DirectBitmap
 
     Private txtFont As New Font("Consolas", 12, FontStyle.Bold)
@@ -122,6 +125,10 @@ Public Class Renderer
 
     Public ReadOnly Property FramesPerSecond As Double
         Get
+            If framesCounter > 1000 Then
+                framesCounter = 0
+                timer.Restart()
+            End If
             Return framesCounter / (timer.ElapsedMilliseconds / 1000)
         End Get
     End Property
@@ -163,11 +170,10 @@ Public Class Renderer
         Dim y As Integer
         Dim z As Double
         Dim pf As Face
-        Dim pVertices As New List(Of Point3d)
         Dim uf As Face
-        Dim uVertices As New List(Of Point3d)
         Dim minZ As Double
         Dim maxZ As Double
+        Dim rv As Point3d
 
         ResetZBuffer()
 
@@ -180,7 +186,7 @@ Public Class Renderer
                 uVertices.Clear()
                 pVertices.Clear()
                 f.Vertices.ForEach(Sub(v)
-                                       Dim rv As Point3d = TranslatePoint(v, , False)
+                                       rv = TranslatePoint(v, , False)
                                        uVertices.Add(rv)
                                        pVertices.Add(TranslatePoint(rv, False).AsInt(ZBufferPixelSize))
                                    End Sub)
@@ -240,12 +246,12 @@ Public Class Renderer
 
         Dim degreeOfParallelism As Integer = Environment.ProcessorCount
         Dim len As Integer = mZBuffer.Length
-        Tasks.Parallel.For(0, degreeOfParallelism, Sub(workerId As Integer)
-                                                       Dim max As Integer = len * (workerId + 1) / degreeOfParallelism
-                                                       For i As Integer = len * workerId / degreeOfParallelism To max - 1
-                                                           mZBuffer(i) = Double.MaxValue
-                                                       Next
-                                                   End Sub)
+        Parallel.For(0, degreeOfParallelism, Sub(workerId As Integer)
+                                                 Dim max As Integer = len * (workerId + 1) / degreeOfParallelism
+                                                 For i As Integer = len * workerId / degreeOfParallelism To max - 1
+                                                     mZBuffer(i) = Double.MaxValue
+                                                 Next
+                                             End Sub)
     End Sub
 
     ' Return Double.MaxValue if it's invalid, returns Z if otherwise
@@ -334,7 +340,7 @@ Public Class Renderer
     Private Sub RenderZLine(c1 As Color, p1 As Point3d, c2 As Color, p2 As Point3d, minZ As Double, maxZ As Double)
         Dim dx As Double = p2.X - p1.X
         Dim dy As Double = p2.Y - p1.Y
-        Dim l As Double = Math.Sqrt(dx ^ 2 + dy ^ 2)
+        Dim l As Double = Math.Sqrt(dx * dx + dy * dy)
         Dim a As Double = Math.Atan2(dy, dx)
         Dim p As New Point3d()
         Dim d As Double
