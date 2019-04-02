@@ -14,6 +14,7 @@ Public Class FormMain
     Private gifAnimEnable As Boolean = False
     Private captureFrame As Boolean
     Private breakRenderingThread As Boolean
+    Private randomizeColors As Boolean = True
 
     Private syncObj As New Object()
 
@@ -33,9 +34,10 @@ Public Class FormMain
         InitializeScene()
 
         'AddObjectsToScene_Sample1()
-        AddObjectsToScene_Sample2()
+        'AddObjectsToScene_Sample2()
         'AddObjectsToScene_Sample3()
         'AddObjectsToScene_Sample4()
+        AddObjectsToScene_Sample5()
 
         'Dim txt As String = ""
         'For Each o In r3D.Objects3D
@@ -44,7 +46,7 @@ Public Class FormMain
         '    Next
         'Next
         'IO.File.WriteAllText(IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "sphere.txt"), txt)
-        r3D.Objects3D.ForEach(Sub(o3d) RandomizeFacesColors(o3d.Value))
+        If randomizeColors Then r3D.Objects3D.ForEach(Sub(o3d) RandomizeFacesColors(o3d.Value))
 
         StartRenderingThread()
     End Sub
@@ -151,6 +153,44 @@ Public Class FormMain
     Private Sub AddObjectsToScene_Sample4()
         r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere(14), Color.Blue))
         'r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere2(14), Color.Blue))
+    End Sub
+
+    Private Sub AddObjectsToScene_Sample5()
+        Dim s As Double = 4
+        Dim sh As Double = s / 2 + 0.75
+        Dim c As Object3D
+        Dim paintFace As Boolean
+        Dim colors As New List(Of Color) From {Color.Green,     ' FRONT
+                                               Color.Red,       ' RIGHT
+                                               Color.White,     ' TOP
+                                               Color.Yellow,    ' BOTTOM
+                                               Color.Blue,      ' BACK
+                                               Color.Blue}      ' LEFT
+
+        randomizeColors = False
+        r3D.ZBufferPixelSize = 2
+        r3D.ZBufferColorDepth = False
+
+        For x As Integer = 0 To 2
+            For y As Integer = 0 To 2
+                For z As Integer = 0 To 2
+                    c = New Object3D(Primitives.Cube(s), Color.Black)
+                    c.TransformMove(x * sh - sh, y * sh - sh, z * sh - sh)
+                    For i As Integer = 0 To c.Faces.Count - 1
+                        Select Case i
+                            Case 0 : paintFace = (z = 0) ' FRONT
+                            Case 1 : paintFace = (x = 2) ' RIGHT
+                            Case 2 : paintFace = (y = 0) ' TOP
+                            Case 3 : paintFace = (y = 2) ' BOTTOM
+                            Case 4 : paintFace = (z = 2) ' BACK
+                            Case 5 : paintFace = (x = 0) ' LEFT
+                        End Select
+                        If paintFace Then c.Faces(i).Color = colors(i)
+                    Next
+                    r3D.Objects3D.Add($"Cubie{x}{y}{z}", c)
+                Next
+            Next
+        Next
     End Sub
 
     Private Sub RandomizeFacesColors(object3D As Object3D)
