@@ -122,14 +122,14 @@ Namespace Delaunay
                 Next
 
                 Dim isRedundantTetra(newTetrasList.Count - 1) As Boolean
-                Threading.Tasks.Parallel.For(0, newTetrasList.Count - 1, Sub(i As Integer)
-                                                                             Threading.Tasks.Parallel.For(i + 1, newTetrasList.Count, Sub(j As Integer)
-                                                                                                                                          If newTetrasList(i) = newTetrasList(j) Then
-                                                                                                                                              isRedundantTetra(i) = True
-                                                                                                                                              isRedundantTetra(j) = True
-                                                                                                                                          End If
-                                                                                                                                      End Sub)
-                                                                         End Sub)
+                Parallel.For(0, newTetrasList.Count - 1, Sub(i As Integer)
+                                                             Parallel.For(i + 1, newTetrasList.Count, Sub(j As Integer)
+                                                                                                          If newTetrasList(i) = newTetrasList(j) Then
+                                                                                                              isRedundantTetra(i) = True
+                                                                                                              isRedundantTetra(j) = True
+                                                                                                          End If
+                                                                                                      End Sub)
+                                                         End Sub)
                 'For i As Integer = 0 To newTetrasList.Count - 2
                 '    'If isRedundantTetra(i) Then Continue For
                 '    For j As Integer = i + 1 To newTetrasList.Count - 1
@@ -208,14 +208,14 @@ Namespace Delaunay
             Console.WriteLine("Obtaining triangles...")
             mTriangles.Clear()
             Dim isSameTriangle(triList.Count - 1) As Boolean
-            Threading.Tasks.Parallel.For(0, triList.Count - 1, Sub(i As Integer)
-                                                                   Threading.Tasks.Parallel.For(i + 1, triList.Count, Sub(j As Integer)
-                                                                                                                          If triList(i) = triList(j) Then
-                                                                                                                              isSameTriangle(i) = True
-                                                                                                                              isSameTriangle(j) = True
-                                                                                                                          End If
-                                                                                                                      End Sub)
-                                                               End Sub)
+            Parallel.For(0, triList.Count - 1, Sub(i As Integer)
+                                                   Parallel.For(i + 1, triList.Count, Sub(j As Integer)
+                                                                                          If triList(i) = triList(j) Then
+                                                                                              isSameTriangle(i) = True
+                                                                                              isSameTriangle(j) = True
+                                                                                          End If
+                                                                                      End Sub)
+                                               End Sub)
             'For i As Integer = 0 To triList.Count - 2
             '    'If isSameTriangle(i) Then Continue For
             '    For j As Integer = i + 1 To triList.Count - 1

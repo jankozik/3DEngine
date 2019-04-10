@@ -117,7 +117,7 @@
 
     Private Sub UpdateArea()
         Dim j As Integer
-        Dim n = Vertices.Count
+        Dim n As Integer = Vertices.Count
 
         For i As Integer = 0 To n - 1
             j = (i + 1) Mod n

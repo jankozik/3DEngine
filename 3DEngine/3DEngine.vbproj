@@ -117,6 +117,7 @@
     </Compile>
     <Compile Include="Classes\Primitives.vb" />
     <Compile Include="Classes\Face.vb" />
+    <Compile Include="RubikHelper.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormMain.resx">
