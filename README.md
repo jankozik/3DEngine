@@ -2,8 +2,8 @@
 Simple 3D rendering engine entirely written in VB.NET
 
 Main features:
-- Objects are provided by defining their vertices and an included Delaunay algorithm performs the necessary triangulations to extract the object's faces.
-- Multiple rendering modes, including ZBuffering.
+- Objects are provided by defining their vertices and an included Delaunay algorithm performs the necessary triangulations to extract the objects' faces.
+- Multiple rendering modes.
 - Multiple objects per scene.
 - Fast GDI+ drawing.
 - Save scene to GIF.
@@ -17,4 +17,13 @@ Known issues:
 
 Rubik's cube sample:
 
-![Simple Solids](https://xfx.net/stackoverflow/3DEngine/3dengine_sample02.png)
+![Rubik's cube](https://xfx.net/stackoverflow/3DEngine/3dengine_sample02.png)
+
+When using the Rubik's cube sample:
+
+* [F] Rotate Front Face
+* [B] Rotate Back Face
+* [T] Rotate Top Face
+* [D] Rotate Bottom Face
+* [L] Rotate Left Face
+* [R] Rotate Right Face
