@@ -49,12 +49,13 @@
                               1, 0, 0))
     End Sub
 
+    ' TODO: Add support to rotate clockwise
     Public Shared Sub Rotate(r3d As Renderer, xi As Integer, xm As Integer, yi As Integer, ym As Integer, zi As Integer, zm As Integer, i As Integer, j As Integer, k As Integer)
         For a As Integer = 0 To 90 - 1
             For x As Integer = xi To xm
                 For y As Integer = yi To ym
                     For z As Integer = zi To zm
-                        r3d.Objects3D($"Cubie{x}{y}{z}").TransformRotate(i, j, k)
+                        r3d.Objects3D($"Cubie{x}{y}{z}").TransformRotate(i, -j, k)
                     Next
                 Next
             Next
@@ -63,15 +64,16 @@
 
         SyncLock SyncObj
             Dim n As Integer
-            If k <> 0 Then
-                n = ym + 1
+
+            If i <> 0 Then
+                n = zm + 1
                 For i = 0 To n / 2 - 1
                     For j = 0 To (n + 1) / 2 - 1
                         CyclicRoll(r3d,
-                                    $"Cubie{i}{j}{zi}",
-                                    $"Cubie{n - 1 - j}{i}{zi}",
-                                    $"Cubie{n - 1 - i}{n - 1 - j}{zi}",
-                                    $"Cubie{j}{n - 1 - i}{zi}")
+                                    $"Cubie{xi}{i}{j}",
+                                    $"Cubie{xi}{n - 1 - j}{i}",
+                                    $"Cubie{xi}{n - 1 - i}{n - 1 - j}",
+                                    $"Cubie{xi}{j}{n - 1 - i}")
                     Next
                 Next
                 Exit Sub
@@ -91,15 +93,15 @@
                 Exit Sub
             End If
 
-            If i <>0 Then
-                n = zm + 1
+            If k <> 0 Then
+                n = ym + 1
                 For i = 0 To n / 2 - 1
                     For j = 0 To (n + 1) / 2 - 1
                         CyclicRoll(r3d,
-                                    $"Cubie{xi}{i}{j}",
-                                    $"Cubie{xi}{n - 1 - j}{i}",
-                                    $"Cubie{xi}{n - 1 - i}{n - 1 - j}",
-                                    $"Cubie{xi}{j}{n - 1 - i}")
+                                    $"Cubie{i}{j}{zi}",
+                                    $"Cubie{n - 1 - j}{i}{zi}",
+                                    $"Cubie{n - 1 - i}{n - 1 - j}{zi}",
+                                    $"Cubie{j}{n - 1 - i}{zi}")
                     Next
                 Next
                 Exit Sub
@@ -109,6 +111,10 @@
 
     ' https://stackoverflow.com/questions/2893101/how-to-rotate-a-n-x-n-matrix-by-90-degrees
     Private Shared Sub CyclicRoll(r3d As Renderer, ByRef a As String, ByRef b As String, ByRef c As String, ByRef d As String)
+        Debug.WriteLine($"{a}={b}")
+        Debug.WriteLine($"{b}={c}")
+        Debug.WriteLine($"{d}={a}")
+
         Dim tmp As String = a
         ChangeCubieName(r3d, a, b, "", "tmp")
         ChangeCubieName(r3d, b, c, "", "tmp")
