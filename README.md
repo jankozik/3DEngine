@@ -19,7 +19,7 @@ Rubik's cube sample:
 
 ![Rubik's cube](https://xfx.net/stackoverflow/3DEngine/3dengine_sample02.png)
 
-When using the Rubik's cube sample:
+When using the Rubik's cube sample, use the following keys to rotate each face:
 
 * [F] Rotate Front Face
 * [B] Rotate Back Face
