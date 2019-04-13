@@ -1,5 +1,6 @@
 ﻿Public Class RubikHelper
-    Public Shared SyncObj As New Object()
+    Public Shared SyncMastObj As New Object()
+    Public Shared SyncRotationObj As New Object()
 
     Public Shared Sub RotateFront(r3d As Renderer)
         Task.Run(Sub() Rotate(r3d,
@@ -51,20 +52,22 @@
 
     ' TODO: Add support to rotate clockwise
     Public Shared Sub Rotate(r3d As Renderer, xi As Integer, xm As Integer, yi As Integer, ym As Integer, zi As Integer, zm As Integer, i As Integer, j As Integer, k As Integer)
-        For a As Integer = 0 To 90 - 1
-            For x As Integer = xi To xm
-                For y As Integer = yi To ym
-                    For z As Integer = zi To zm
-                        r3d.Objects3D($"Cubie{x}{y}{z}").TransformRotate(i, -j, k)
+        Dim n As Integer
+
+        SyncLock SyncRotationObj
+            For a As Integer = 0 To 90 - 1
+                For x As Integer = xi To xm
+                    For y As Integer = yi To ym
+                        For z As Integer = zi To zm
+                            r3d.Objects3D($"Cubie{x}{y}{z}").TransformRotate(i, -j, k)
+                        Next
                     Next
                 Next
+                Threading.Thread.Sleep(5)
             Next
-            Threading.Thread.Sleep(5)
-        Next
+        End SyncLock
 
-        SyncLock SyncObj
-            Dim n As Integer
-
+        SyncLock SyncMastObj
             If i <> 0 Then
                 n = zm + 1
                 For i = 0 To n / 2 - 1
@@ -111,10 +114,6 @@
 
     ' https://stackoverflow.com/questions/2893101/how-to-rotate-a-n-x-n-matrix-by-90-degrees
     Private Shared Sub CyclicRoll(r3d As Renderer, ByRef a As String, ByRef b As String, ByRef c As String, ByRef d As String)
-        Debug.WriteLine($"{a}={b}")
-        Debug.WriteLine($"{b}={c}")
-        Debug.WriteLine($"{d}={a}")
-
         Dim tmp As String = a
         ChangeCubieName(r3d, a, b, "", "tmp")
         ChangeCubieName(r3d, b, c, "", "tmp")

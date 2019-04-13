@@ -89,7 +89,7 @@ Public Class FormMain
         Task.Run(Sub()
                      Do
                          sw.Restart()
-                         SyncLock RubikHelper.SyncObj
+                         SyncLock RubikHelper.SyncMastObj
                              Try
                                  r3D.Render(True)
                              Catch
@@ -114,7 +114,7 @@ Public Class FormMain
     End Sub
 
     Private Sub SetSurfaceSize()
-        SyncLock RubikHelper.SyncObj
+        SyncLock RubikHelper.SyncMastObj
             r3D.SurfaceSize = Me.DisplayRectangle.Size
         End SyncLock
         r3D.Camera = New Point3d(0.0, 0.0, -10.0)
@@ -205,14 +205,16 @@ Public Class FormMain
         r3D.AngleY -= 45
 
         AddHandler Me.KeyDown, Sub(sender As Object, e As KeyEventArgs)
-                                   Select Case e.KeyCode
-                                       Case Keys.F : RubikHelper.RotateFront(r3D)   ' Front
-                                       Case Keys.B : RubikHelper.RotateBack(r3D)    ' Back
-                                       Case Keys.T : RubikHelper.RotateTop(r3D)     ' Top
-                                       Case Keys.D : RubikHelper.RotateBottom(r3D)  ' Bottom
-                                       Case Keys.L : RubikHelper.RotateLeft(r3D)    ' Left
-                                       Case Keys.R : RubikHelper.RotateRight(r3D)   ' Right
-                                   End Select
+                                   SyncLock RubikHelper.SyncRotationObj
+                                       Select Case e.KeyCode
+                                           Case Keys.F : RubikHelper.RotateFront(r3D)   ' Front
+                                           Case Keys.B : RubikHelper.RotateBack(r3D)    ' Back
+                                           Case Keys.T : RubikHelper.RotateTop(r3D)     ' Top
+                                           Case Keys.D : RubikHelper.RotateBottom(r3D)  ' Bottom
+                                           Case Keys.L : RubikHelper.RotateLeft(r3D)    ' Left
+                                           Case Keys.R : RubikHelper.RotateRight(r3D)   ' Right
+                                       End Select
+                                   End SyncLock
                                End Sub
     End Sub
 
@@ -285,7 +287,7 @@ Public Class FormMain
         'g.SmoothingMode = SmoothingMode.AntiAlias 
         'g.InterpolationMode = InterpolationMode.Bicubic
 
-        SyncLock RubikHelper.SyncObj
+        SyncLock RubikHelper.SyncMastObj
             If r3D.Surface Is Nothing Then Exit Sub
             Dim bmp As Bitmap = r3D.Surface
             g.DrawImageUnscaled(bmp, Point.Empty)
@@ -342,7 +344,7 @@ Public Class FormMain
     End Sub
 
     Private Sub Main_MouseMove(sender As Object, e As MouseEventArgs) Handles Me.MouseMove
-        SyncLock RubikHelper.SyncObj
+        SyncLock RubikHelper.SyncMastObj
             If isMouseLeftButtonDown Then
                 r3D.AngleX += e.Location.Y - mouseOrigin.Y
                 r3D.AngleY -= e.Location.X - mouseOrigin.X
@@ -369,8 +371,6 @@ Public Class FormMain
     End Sub
 
     Private Sub FormMain_MouseWheel(sender As Object, e As MouseEventArgs) Handles Me.MouseWheel
-        SyncLock RubikHelper.SyncObj
-            r3D.Camera.Z += e.Delta / 30
-        End SyncLock
+        r3D.Camera.Z += e.Delta / 30
     End Sub
 End Class

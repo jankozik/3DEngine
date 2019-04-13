@@ -149,8 +149,8 @@
         For Each face In mFaces
             verticesCount = face.Vertices.Count
             For i As Integer = 0 To verticesCount - 1
-                Dim p1 = face.Vertices(i)
-                Dim p2 = face.Vertices((i + 1) Mod verticesCount)
+                Dim p1 As Point3d = face.Vertices(i)
+                Dim p2 As Point3d = face.Vertices((i + 1) Mod verticesCount)
                 Dim edge As New Line(p1, p2)
                 If Not mEdges.Contains(edge) Then mEdges.Add(edge)
             Next
