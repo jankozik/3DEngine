@@ -63,7 +63,7 @@
                         Next
                     Next
                 Next
-                Threading.Thread.Sleep(5)
+                Threading.Thread.Sleep(1)
             Next
         End SyncLock
 
