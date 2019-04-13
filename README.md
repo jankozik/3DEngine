@@ -12,8 +12,9 @@ Main features:
 
 Known issues:
 - Transparency is not working.
-- There seems to be a bug in the triangualtion algorithm which causes it to fail when triangualting the vertices of a sphere.
+- There seems to be a bug in the triangulation algorithm which causes it to fail when tessellating the vertices of a sphere.
 - Although support to save animated GIFs is implemented, the [GifBitmapEncoder](https://msdn.microsoft.com/en-us/library/system.windows.media.imaging.gifbitmapencoder(v=vs.110).aspx) does not seem to support saving animated GIFs.
+- Clockwise rotations in the Rubik's cube sample are not currently supported.
 
 Rubik's cube sample:
 
