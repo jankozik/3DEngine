@@ -88,17 +88,16 @@ Public Class FormMain
 
         Task.Run(Sub()
                      Do
-                         sw.Restart()
-                         SyncLock RubikHelper.SyncMastObj
-                             Try
-                                 r3D.Render(True)
-                             Catch
-                             End Try
-                         End SyncLock
-                         sw.Stop()
+                         Try
+                             Do
+                                 sw.Restart()
+                                 SyncLock RubikHelper.SyncMastObj
+                                     r3D.Render(True)
+                                 End SyncLock
+                                 sw.Stop()
 
-                         Me.Invalidate()
-                         Thread.Sleep(Math.Max(0, delay - sw.ElapsedMilliseconds))
+                                 Me.Invalidate()
+                                 Thread.Sleep(Math.Max(1, delay - sw.ElapsedMilliseconds))
 
 #If EnableGIFEncoder Then
                          If gifAnimEnable Then
@@ -109,6 +108,10 @@ Public Class FormMain
                              End If
                          End If
 #End If
+                             Loop
+                         Catch
+                         End Try
+                         Thread.Sleep(10)
                      Loop
                  End Sub)
     End Sub

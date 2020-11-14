@@ -18,9 +18,6 @@ Public Class Renderer
     Public Property BackColor As Color = Color.Black
     Public Property ZBufferWireframeColor As Color = Color.Black
 
-    Private pVertices As New List(Of Point3d)
-    Private uVertices As New List(Of Point3d)
-
     Private mObjects3D As New Objects3DCollection()
     Private mCamera As New Point3d()
     Private mSurfaceSize As New SizeF(1.0, 1.0)
@@ -166,77 +163,74 @@ Public Class Renderer
     End Sub
 
     Private Sub RenderAsZBuffer(Optional fillFaces As Boolean = True, Optional wireFrame As Boolean = False)
-        Dim x As Integer
-        Dim y As Integer
-        Dim z As Double
-        Dim pf As Face
-        Dim uf As Face
-        Dim minZ As Double
-        Dim maxZ As Double
-        Dim rv As Point3d
-
         ResetZBuffer()
 
-        For Each o3d In mObjects3D
-            ' I think it would be faster to first process all faces (list of projected [pf] and un-projected [uf])
-            '    and then render the faces in Z order (from closest to farthest).
-            ' Doing so would minimize the instances where a ZPixel is render more than once.
+        Parallel.ForEach(mObjects3D, Sub(o3d)
+                                         ' I think it would be faster to first process all faces (list of projected [pf] and un-projected [uf])
+                                         '    and then render the faces in Z order (from closest to farthest).
+                                         ' Doing so would minimize the instances where a ZPixel is render more than once.
 
-            For Each f As Face In o3d.Value.Faces
-                uVertices.Clear()
-                pVertices.Clear()
-                f.Vertices.ForEach(Sub(v)
-                                       rv = TranslatePoint(v, , False)
-                                       uVertices.Add(rv)
-                                       pVertices.Add(TranslatePoint(rv, False).AsInt(ZBufferPixelSize))
-                                   End Sub)
-                uf = New Face(uVertices)
-                pf = New Face(pVertices)
+                                         Dim minZ As Double
+                                         Dim maxZ As Double
+                                         Dim pVertices As New List(Of Point3d)
+                                         Dim uVertices As New List(Of Point3d)
 
-                If mZBufferTransparency OrElse mZBufferColorDepth Then
-                    minZ = Double.MaxValue
-                    maxZ = Double.MinValue
-                    For Each v In uf.Vertices
-                        minZ = Math.Min(v.Z, minZ)
-                        maxZ = Math.Max(v.Z, maxZ)
-                    Next
-                End If
+                                         For Each f As Face In o3d.Value.Faces
+                                             pVertices.Clear()
+                                             uVertices.Clear()
+                                             f.Vertices.ForEach(Sub(v)
+                                                                    Dim rv As Point3d = TranslatePoint(v, , False)
+                                                                    uVertices.Add(rv)
+                                                                    pVertices.Add(TranslatePoint(rv, False).AsInt(ZBufferPixelSize))
+                                                                End Sub)
+                                             Dim uf As New Face(uVertices)
+                                             Dim pf As New Face(pVertices)
 
-                If o3d.Value.IsValid AndAlso o3d.Value.IsSolid Then
-                    For y = pf.Top + ZBufferPixelSize To pf.Bottom Step ZBufferPixelSize
-                        For x = pf.Left + ZBufferPixelSize To pf.Right Step ZBufferPixelSize
-                            If Not pf.Contains(x, y) Then Continue For
+                                             If mZBufferTransparency OrElse mZBufferColorDepth Then
+                                                 minZ = Double.MaxValue
+                                                 maxZ = Double.MinValue
+                                                 For Each v In uf.Vertices
+                                                     minZ = Math.Min(v.Z, minZ)
+                                                     maxZ = Math.Max(v.Z, maxZ)
+                                                 Next
+                                             End If
 
-                            z = IsZBufferPixelValid(x, y, uf)
-                            If z <> Double.MaxValue Then
-                                If fillFaces Then RenderZPixel(f.Color, x, y, z, minZ, maxZ)
+                                             If o3d.Value.IsValid AndAlso o3d.Value.IsSolid Then
+                                                 For y As Integer = pf.Top + ZBufferPixelSize To pf.Bottom Step ZBufferPixelSize
+                                                     For x As Integer = pf.Left + ZBufferPixelSize To pf.Right Step ZBufferPixelSize
+                                                         If Not pf.Contains(x, y) Then Continue For
 
-                                If wireFrame Then
-                                    Dim isOnEdge As Boolean = False
-                                    For y1 = y - ZBufferPixelSize To y + ZBufferPixelSize
-                                        For x1 = x - ZBufferPixelSize To x + ZBufferPixelSize
-                                            If Not pf.Contains(x1, y1) Then
-                                                isOnEdge = True
-                                                Exit For
-                                            End If
-                                        Next
-                                        If isOnEdge Then Exit For
-                                    Next
+                                                         Dim z As Double = IsZBufferPixelValid(x, y, uf)
+                                                         If z <> Double.MaxValue Then
+                                                             If fillFaces Then RenderZPixel(f.Color, x, y, z, minZ, maxZ)
 
-                                    If isOnEdge Then
-                                        RenderZPixel(ZBufferWireframeColor, x, y, z, minZ, maxZ)
-                                    ElseIf Not fillFaces Then
-                                        RenderZPixel(BackColor, x, y, z, minZ, maxZ)
-                                    End If
-                                End If
-                            End If
-                        Next
-                    Next
-                Else
-                    f.Vertices.ForEach(Sub(v) RenderZPixel(Color.Red, TranslatePoint(v).AsInt(ZBufferPixelSize), minZ, maxZ))
-                End If
-            Next
-        Next
+                                                             If wireFrame Then
+                                                                 Dim isOnEdge As Boolean = False
+                                                                 For y1 = y - ZBufferPixelSize To y + ZBufferPixelSize
+                                                                     For x1 = x - ZBufferPixelSize To x + ZBufferPixelSize
+                                                                         If Not pf.Contains(x1, y1) Then
+                                                                             isOnEdge = True
+                                                                             Exit For
+                                                                         End If
+                                                                     Next
+                                                                     If isOnEdge Then Exit For
+                                                                 Next
+
+                                                                 If isOnEdge Then
+                                                                     RenderZPixel(ZBufferWireframeColor, x, y, z, minZ, maxZ)
+                                                                 ElseIf Not fillFaces Then
+                                                                     RenderZPixel(BackColor, x, y, z, minZ, maxZ)
+                                                                 End If
+                                                             End If
+                                                         End If
+                                                     Next
+                                                 Next
+                                             Else
+                                                 f.Vertices.ForEach(Sub(v) RenderZPixel(Color.Red, TranslatePoint(v).AsInt(ZBufferPixelSize), minZ, maxZ))
+                                             End If
+                                         Next
+                                         'Next
+                                     End Sub)
     End Sub
 
     Private Sub ResetZBuffer()
