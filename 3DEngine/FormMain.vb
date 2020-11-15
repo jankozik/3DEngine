@@ -88,16 +88,16 @@ Public Class FormMain
 
         Task.Run(Sub()
                      Do
-                         Try
-                             Do
-                                 sw.Restart()
-                                 SyncLock RubikHelper.SyncMastObj
-                                     r3D.Render(True)
-                                 End SyncLock
-                                 sw.Stop()
+                         sw.Restart()
 
-                                 Me.Invalidate()
-                                 Thread.Sleep(Math.Max(1, delay - sw.ElapsedMilliseconds))
+                         SyncLock RubikHelper.SyncMastObj
+                             r3D.Render(True)
+                         End SyncLock
+                         Me.Invalidate()
+
+                         sw.Stop()
+
+                         Thread.Sleep(Math.Max(1, delay - sw.ElapsedMilliseconds))
 
 #If EnableGIFEncoder Then
                          If gifAnimEnable Then
@@ -108,10 +108,6 @@ Public Class FormMain
                              End If
                          End If
 #End If
-                             Loop
-                         Catch
-                         End Try
-                         Thread.Sleep(10)
                      Loop
                  End Sub)
     End Sub
@@ -210,12 +206,10 @@ Public Class FormMain
         AddHandler Me.KeyDown, Sub(sender As Object, e As KeyEventArgs)
                                    SyncLock RubikHelper.SyncRotationObj
                                        Select Case e.KeyCode
-                                           Case Keys.F : RubikHelper.RotateFront(r3D)   ' Front
-                                           Case Keys.B : RubikHelper.RotateBack(r3D)    ' Back
-                                           Case Keys.T : RubikHelper.RotateTop(r3D)     ' Top
-                                           Case Keys.D : RubikHelper.RotateBottom(r3D)  ' Bottom
-                                           Case Keys.L : RubikHelper.RotateLeft(r3D)    ' Left
-                                           Case Keys.R : RubikHelper.RotateRight(r3D)   ' Right
+                                           Case Keys.F : RubikHelper.RotateFront(r3D, e.Shift)  ' Front
+                                           Case Keys.U : RubikHelper.RotateUp(r3D, e.Shift)     ' Top
+                                           Case Keys.L : RubikHelper.RotateLeft(r3D, e.Shift)   ' Left
+                                           Case Keys.R : RubikHelper.RotateRight(r3D, e.Shift)  ' Right
                                        End Select
                                    End SyncLock
                                End Sub

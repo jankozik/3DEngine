@@ -82,10 +82,10 @@
   <ItemGroup>
     <Compile Include="Classes\Delaunay\Hilbert.vb" />
     <Compile Include="Classes\Delaunay\Triangulator.vb" />
-    <Compile Include="Classes\Delaunay\Line.vb" />
+    <Compile Include="Classes\Delaunay\Line3d.vb" />
     <Compile Include="Classes\Delaunay\Point3d.vb" />
-    <Compile Include="Classes\Delaunay\Tetrahedron.vb" />
-    <Compile Include="Classes\Delaunay\Triangle.vb" />
+    <Compile Include="Classes\Delaunay\Tetrahedron3d.vb" />
+    <Compile Include="Classes\Delaunay\Triangle3d.vb" />
     <Compile Include="Classes\Helpers\ArrayExtensions.vb" />
     <Compile Include="Classes\Helpers\DirectBitmap.vb" />
     <Compile Include="Classes\Helpers\GifEncoder.vb" />

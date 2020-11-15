@@ -172,12 +172,10 @@ Public Class Renderer
 
                                          Dim minZ As Double
                                          Dim maxZ As Double
-                                         Dim pVertices As New List(Of Point3d)
-                                         Dim uVertices As New List(Of Point3d)
 
                                          For Each f As Face In o3d.Value.Faces
-                                             pVertices.Clear()
-                                             uVertices.Clear()
+                                             Dim pVertices As New List(Of Point3d)
+                                             Dim uVertices As New List(Of Point3d)
                                              f.Vertices.ForEach(Sub(v)
                                                                     Dim rv As Point3d = TranslatePoint(v, , False)
                                                                     uVertices.Add(rv)
@@ -248,17 +246,17 @@ Public Class Renderer
                                              End Sub)
     End Sub
 
-    ' Return Double.MaxValue if it's invalid, returns Z if otherwise
+    ' Returns Double.MaxValue if it's invalid, returns Z if otherwise
     Private Function IsZBufferPixelValid(x As Integer, y As Integer, uf As Face) As Double
         Dim zBufferOffset = y * mSurfaceSize.Width + x
         If zBufferOffset < 0 OrElse zBufferOffset >= mZBuffer.Length Then Return Double.MaxValue
 
-        Dim ray As New Line((New Point3d(x, y, 999)).UnProject(mSurfaceSize.Width,
-                                                    mSurfaceSize.Height,
-                                                    FOV, Distance),
-                             New Point3d(x, y, -999).UnProject(mSurfaceSize.Width,
-                                                    mSurfaceSize.Height,
-                                                    FOV, Distance))
+        Dim ray As New Line3d(New Point3d(x, y, +999).UnProject(mSurfaceSize.Width,
+                                                                mSurfaceSize.Height,
+                                                                FOV, Distance),
+                              New Point3d(x, y, -999).UnProject(mSurfaceSize.Width,
+                                                                mSurfaceSize.Height,
+                                                                FOV, Distance))
         Dim interPoint As Point3d = uf.GetPointAtIntersection(ray)
 
         If interPoint?.Z < mZBuffer(zBufferOffset) Then
@@ -303,7 +301,7 @@ Public Class Renderer
 
             For y1 As Integer = y To y + ZBufferPixelSize
                 For x1 As Integer = x To x + ZBufferPixelSize
-                    Surface.Pixel(x1, y1) = c
+                    Surface.PixelFast(x1, y1) = c
                 Next
             Next
         End If
@@ -319,7 +317,7 @@ Public Class Renderer
         Dim c As Color
         For y1 As Integer = y To y + ZBufferPixelSize
             For x1 As Integer = x To x + ZBufferPixelSize
-                c = Surface.Pixel(x1, y1)
+                c = Surface.PixelFast(x1, y1)
                 a += c.A
                 r += c.R
                 g += c.G

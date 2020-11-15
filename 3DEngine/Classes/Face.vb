@@ -145,10 +145,10 @@
     End Sub
 
     ' http://stackoverflow.com/questions/21114796/3d-ray-quad-intersection-test-in-java
-    Public Function GetPointAtIntersection(ray As Line) As Point3d
+    Public Function GetPointAtIntersection(ray As Line3d) As Point3d
         Dim dS21 As Point3d = Vertices(1) - Vertices(0)
         Dim dS31 As Point3d = Vertices(2) - Vertices(0)
-        Dim n As Point3d = dS21.Cross(dS31) ' mNormal
+        Dim n As Point3d = dS21.Cross(dS31)
 
         Dim dR As Point3d = ray.Start - ray.End
         Dim nDotdR As Double = n.Dot(dR)
@@ -175,8 +175,7 @@
         Dim j As Integer = n
 
         For i As Integer = 0 To n
-            If (Vertices(i).Y < y AndAlso Vertices(j).Y >= y) OrElse
-                (Vertices(j).Y < y AndAlso Vertices(i).Y >= y) Then
+            If (Vertices(i).Y < y AndAlso Vertices(j).Y >= y) OrElse (Vertices(j).Y < y AndAlso Vertices(i).Y >= y) Then
                 If Vertices(i).X + (y - Vertices(i).Y) / (Vertices(j).Y - Vertices(i).Y) * (Vertices(j).X - Vertices(i).X) < x Then
                     result = Not result
                 End If

@@ -37,33 +37,33 @@ Namespace Delaunay
     Public Class Triangualtor
         Public Const Epsilon As Double = 0.01
 
-        Private mTetras As New List(Of Tetrahedron)
-        Private mEdges As New List(Of Line)
-        Private mSurfaceEdges As New List(Of Line)
-        Private mTriangles As New List(Of Triangle)
+        Private mTetras As New List(Of Tetrahedron3d)
+        Private mEdges As New List(Of Line3d)
+        Private mSurfaceEdges As New List(Of Line3d)
+        Private mTriangles As New List(Of Triangle3d)
 
         Public Sub New()
         End Sub
 
-        Public ReadOnly Property Triangles As List(Of Triangle)
+        Public ReadOnly Property Triangles As List(Of Triangle3d)
             Get
                 Return mTriangles
             End Get
         End Property
 
-        Public ReadOnly Property Edges As List(Of Line)
+        Public ReadOnly Property Edges As List(Of Line3d)
             Get
                 Return mEdges
             End Get
         End Property
 
-        Public ReadOnly Property SurfaceEdges As List(Of Line)
+        Public ReadOnly Property SurfaceEdges As List(Of Line3d)
             Get
                 Return mSurfaceEdges
             End Get
         End Property
 
-        Public ReadOnly Property Tetrahedrons As List(Of Tetrahedron)
+        Public ReadOnly Property Tetrahedrons As List(Of Tetrahedron3d)
             Get
                 Return mTetras
             End Get
@@ -96,29 +96,29 @@ Namespace Delaunay
             Dim v3 As New Point3d(center.X + Math.Sqrt(2) * r, center.Y - r, center.Z + Math.Sqrt(6) * r)
             Dim v4 As New Point3d(center.X + Math.Sqrt(2) * r, center.Y - r, center.Z - Math.Sqrt(6) * r)
             Dim outerTetra() As Point3d = {v1, v2, v3, v4}
-            mTetras.Add(New Tetrahedron(outerTetra))
+            mTetras.Add(New Tetrahedron3d(outerTetra))
 
             Console.WriteLine("Analyzing points and generating tetrahedrons...")
             For Each p As Point3d In points
                 ' Temporary lists for dynamically changing the geometry
-                Dim tmpTetrasList As New List(Of Tetrahedron)
-                Dim newTetrasList As New List(Of Tetrahedron)
+                Dim tmpTetrasList As New List(Of Tetrahedron3d)
+                Dim newTetrasList As New List(Of Tetrahedron3d)
 
-                For Each t As Tetrahedron In mTetras.AsParallel()
+                For Each t As Tetrahedron3d In mTetras.AsParallel()
                     If t.IsValid AndAlso t.Radius > p.Distance(t.Center) Then tmpTetrasList.Add(t)
                 Next
 
-                For Each t As Tetrahedron In tmpTetrasList
+                For Each t As Tetrahedron3d In tmpTetrasList
                     mTetras.Remove(t)
 
                     v1 = t.Vertices(0)
                     v2 = t.Vertices(1)
                     v3 = t.Vertices(2)
                     v4 = t.Vertices(3)
-                    newTetrasList.Add(New Tetrahedron(v1, v2, v3, p))
-                    newTetrasList.Add(New Tetrahedron(v1, v2, v4, p))
-                    newTetrasList.Add(New Tetrahedron(v1, v3, v4, p))
-                    newTetrasList.Add(New Tetrahedron(v2, v3, v4, p))
+                    newTetrasList.Add(New Tetrahedron3d(v1, v2, v3, p))
+                    newTetrasList.Add(New Tetrahedron3d(v1, v2, v4, p))
+                    newTetrasList.Add(New Tetrahedron3d(v1, v3, v4, p))
+                    newTetrasList.Add(New Tetrahedron3d(v2, v3, v4, p))
                 Next
 
                 Dim isRedundantTetra(newTetrasList.Count - 1) As Boolean
@@ -166,24 +166,24 @@ Namespace Delaunay
 
             Console.WriteLine("Adding edges...")
             mEdges.Clear()
-            For Each t As Tetrahedron In mTetras
-                For Each l1 As Line In t.Lines
+            For Each t As Tetrahedron3d In mTetras
+                For Each l1 As Line3d In t.Lines
                     If Not mEdges.Contains(l1) Then mEdges.Add(l1)
                 Next
             Next
 
             Console.WriteLine("Obtaining faces...")
-            Dim triList As New List(Of Triangle)
-            For Each t As Tetrahedron In mTetras
+            Dim triList As New List(Of Triangle3d)
+            For Each t As Tetrahedron3d In mTetras
                 v1 = t.Vertices(0)
                 v2 = t.Vertices(1)
                 v3 = t.Vertices(2)
                 v4 = t.Vertices(3)
 
-                Dim tri1 As New Triangle(v1, v2, v3)
-                Dim tri2 As New Triangle(v1, v3, v4)
-                Dim tri3 As New Triangle(v1, v4, v2)
-                Dim tri4 As New Triangle(v4, v3, v2)
+                Dim tri1 As New Triangle3d(v1, v2, v3)
+                Dim tri2 As New Triangle3d(v1, v3, v4)
+                Dim tri3 As New Triangle3d(v1, v4, v2)
+                Dim tri4 As New Triangle3d(v4, v3, v2)
 
                 Dim n As Point3d
                 ' Decide direction of the surface
@@ -231,8 +231,8 @@ Namespace Delaunay
 
             Console.WriteLine("Obtaining surface edges...")
             mSurfaceEdges.Clear()
-            Dim surfaceEdgeList As New List(Of Line)
-            For Each t As Triangle In mTriangles
+            Dim surfaceEdgeList As New List(Of Line3d)
+            For Each t As Triangle3d In mTriangles
                 surfaceEdgeList.AddRange(t.Lines)
             Next
 

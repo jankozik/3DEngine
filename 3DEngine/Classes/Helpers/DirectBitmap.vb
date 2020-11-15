@@ -92,6 +92,23 @@ Public Class DirectBitmap
         End Set
     End Property
 
+    Public Property PixelFast(x As Integer, y As Integer) As Color
+        Get
+            Dim offset As Integer = y * w4 + x * 4
+            Return Color.FromArgb(Bits(offset + 3),
+                                  Bits(offset + 2),
+                                  Bits(offset + 1),
+                                  Bits(offset + 0))
+        End Get
+        Set(value As Color)
+            Dim offset As Integer = y * w4 + x * 4
+            Bits(offset + 3) = value.A
+            Bits(offset + 2) = value.R
+            Bits(offset + 1) = value.G
+            Bits(offset + 0) = value.B
+        End Set
+    End Property
+
     Public Property Pixel2(x As Integer, y As Integer) As Color
         Get
             If x < 0 OrElse x >= Width OrElse y < 0 OrElse y >= Height Then Exit Property

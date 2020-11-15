@@ -19,7 +19,7 @@
     End Structure
 
     Private mVertices As New List(Of Point3d)
-    Private mEdges As New List(Of Line)
+    Private mEdges As New List(Of Line3d)
     Private mFaces As New List(Of Face)
     Private mIsValid As Boolean
     Private mBounds As Bounds3D
@@ -87,13 +87,13 @@
         End Get
     End Property
 
-    Public ReadOnly Property Edges As List(Of Line)
+    Public ReadOnly Property Edges As List(Of Line3d)
         Get
             Return mEdges
         End Get
     End Property
 
-    Public ReadOnly Property Triangles As List(Of Triangle)
+    Public ReadOnly Property Triangles As List(Of Triangle3d)
         Get
             Return tessellator?.Triangles
         End Get
@@ -151,7 +151,7 @@
             For i As Integer = 0 To verticesCount - 1
                 Dim p1 As Point3d = face.Vertices(i)
                 Dim p2 As Point3d = face.Vertices((i + 1) Mod verticesCount)
-                Dim edge As New Line(p1, p2)
+                Dim edge As New Line3d(p1, p2)
                 If Not mEdges.Contains(edge) Then mEdges.Add(edge)
             Next
         Next
@@ -181,7 +181,7 @@
         'mIsValid = True
     End Sub
 
-    Private Sub ExtractFaces(triangles As List(Of Triangle), simplify As Boolean)
+    Private Sub ExtractFaces(triangles As List(Of Triangle3d), simplify As Boolean)
         Dim hasCommonVertices As Boolean = False
 
         mFaces.Clear()

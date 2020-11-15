@@ -1,6 +1,6 @@
 ﻿Namespace Delaunay
-    Public Class Tetrahedron
-        Implements IEquatable(Of Tetrahedron)
+    Public Class Tetrahedron3d
+        Implements IEquatable(Of Tetrahedron3d)
 
         Private mVertices(4 - 1) As Point3d
         Private mCenter As Point3d
@@ -41,14 +41,14 @@
             End Get
         End Property
 
-        Public ReadOnly Property Lines As Line()
+        Public ReadOnly Property Lines As Line3d()
             Get
-                Return New Line() {New Line(mVertices(0), mVertices(1)),
-                                   New Line(mVertices(0), mVertices(2)),
-                                   New Line(mVertices(0), mVertices(3)),
-                                   New Line(mVertices(1), mVertices(2)),
-                                   New Line(mVertices(1), mVertices(3)),
-                                   New Line(mVertices(2), mVertices(3))}
+                Return New Line3d() {New Line3d(mVertices(0), mVertices(1)),
+                                   New Line3d(mVertices(0), mVertices(2)),
+                                   New Line3d(mVertices(0), mVertices(3)),
+                                   New Line3d(mVertices(1), mVertices(2)),
+                                   New Line3d(mVertices(1), mVertices(3)),
+                                   New Line3d(mVertices(2), mVertices(3))}
             End Get
         End Property
 
@@ -170,7 +170,7 @@
             Next
         End Sub
 
-        Public Shared Operator =(t1 As Tetrahedron, t2 As Tetrahedron) As Boolean
+        Public Shared Operator =(t1 As Tetrahedron3d, t2 As Tetrahedron3d) As Boolean
             Dim counter As Integer = 0
             For Each p1 In t1.Vertices
                 For Each p2 In t2.Vertices
@@ -181,11 +181,11 @@
             Return counter = 4
         End Operator
 
-        Public Shared Operator <>(t1 As Tetrahedron, t2 As Tetrahedron) As Boolean
+        Public Shared Operator <>(t1 As Tetrahedron3d, t2 As Tetrahedron3d) As Boolean
             Return Not (t1 = t2)
         End Operator
 
-        Public Shadows Function Equals(other As Tetrahedron) As Boolean Implements IEquatable(Of Tetrahedron).Equals
+        Public Shadows Function Equals(other As Tetrahedron3d) As Boolean Implements IEquatable(Of Tetrahedron3d).Equals
             Return Me = other
         End Function
     End Class

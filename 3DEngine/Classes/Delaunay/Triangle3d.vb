@@ -1,6 +1,6 @@
 ﻿Namespace Delaunay
-    Public Class Triangle
-        Implements IEquatable(Of Triangle)
+    Public Class Triangle3d
+        Implements IEquatable(Of Triangle3d)
 
         Private p1 As Point3d
         Private p2 As Point3d
@@ -33,21 +33,21 @@
             End Get
         End Property
 
-        Public ReadOnly Property Lines As Line()
+        Public ReadOnly Property Lines As Line3d()
             Get
-                Return {New Line(p1, p2),
-                        New Line(p2, p3),
-                        New Line(p3, p1)}
+                Return {New Line3d(p1, p2),
+                        New Line3d(p2, p3),
+                        New Line3d(p3, p1)}
             End Get
         End Property
 
-        Public Shared Operator =(t1 As Triangle, t2 As Triangle) As Boolean
-            Dim lines1() As Line = t1.Lines
-            Dim lines2() As Line = t2.Lines
+        Public Shared Operator =(t1 As Triangle3d, t2 As Triangle3d) As Boolean
+            Dim lines1() As Line3d = t1.Lines
+            Dim lines2() As Line3d = t2.Lines
 
             Dim counter As Integer = 0
-            For Each l1 As Line In lines1
-                For Each l2 As Line In lines2
+            For Each l1 As Line3d In lines1
+                For Each l2 As Line3d In lines2
                     If l1 = l2 Then counter += 1
                 Next
             Next
@@ -55,11 +55,11 @@
             Return counter = 3
         End Operator
 
-        Public Shared Operator <>(t1 As Triangle, t2 As Triangle) As Boolean
+        Public Shared Operator <>(t1 As Triangle3d, t2 As Triangle3d) As Boolean
             Return Not (t1 = t2)
         End Operator
 
-        Public Shadows Function Equals(other As Triangle) As Boolean Implements IEquatable(Of Triangle).Equals
+        Public Shadows Function Equals(other As Triangle3d) As Boolean Implements IEquatable(Of Triangle3d).Equals
             Return Me = other
         End Function
     End Class
