@@ -1,6 +1,4 @@
-﻿Imports System.Runtime.InteropServices
-
-Namespace Delaunay
+﻿Namespace Delaunay
     Public Class Point3d
         Implements IEquatable(Of Point3d)
 

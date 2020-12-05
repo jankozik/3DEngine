@@ -1,5 +1,4 @@
-﻿Imports System
-Imports System.Reflection
+﻿Imports System.Reflection
 Imports System.Runtime.InteropServices
 
 ' General Information about an assembly is controlled through the following 
@@ -8,12 +7,12 @@ Imports System.Runtime.InteropServices
 
 ' Review the values of the assembly attributes
 
-<Assembly: AssemblyTitle("3DEngine")> 
-<Assembly: AssemblyDescription("")> 
-<Assembly: AssemblyCompany("xFX JupmpStart")> 
+<Assembly: AssemblyTitle("3DEngine")>
+<Assembly: AssemblyDescription("")>
+<Assembly: AssemblyCompany("xFX JupmpStart")>
 <Assembly: AssemblyProduct("3DEngine")>
 <Assembly: AssemblyCopyright("Copyright © xFX JumpStart 2013-2016")>
-<Assembly: AssemblyTrademark("")> 
+<Assembly: AssemblyTrademark("")>
 
 <Assembly: ComVisible(False)>
 

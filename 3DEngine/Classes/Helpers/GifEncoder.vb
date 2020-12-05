@@ -1,8 +1,4 @@
-﻿Imports System.IO
-Imports System.Windows
-Imports System.Windows.Media.Imaging
-
-' Unfortunately, this doesn't work :(
+﻿' Unfortunately, this doesn't work :(
 ' It looks like GifBitmapEncoder is only useful to read GIF files, not write them...
 Public Class GifEncoder
     Public ReadOnly Property FramesDelay As Integer

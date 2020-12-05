@@ -1,6 +1,4 @@
-﻿Imports System.Threading
-
-Public Class Renderer
+﻿Public Class Renderer
     Public Enum RenderModes
         None = 0
         WireFrame = 2 ^ 0

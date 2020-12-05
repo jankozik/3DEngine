@@ -1,6 +1,4 @@
-﻿Imports N3DEngine
-
-Public Class Objects3DCollection
+﻿Public Class Objects3DCollection
     Implements IDictionary(Of String, Object3D)
 
     Public Class ItemChangedEventArgs

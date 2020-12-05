@@ -1,5 +1,4 @@
-﻿Imports System.Drawing.Drawing2D
-Imports System.Threading
+﻿Imports System.Threading
 Imports N3DEngine.Renderer
 
 Public Class FormMain
@@ -7,7 +6,7 @@ Public Class FormMain
     Private isMouseLeftButtonDown As Boolean
     Private isMouseRightButtonDown As Boolean
 
-    Private r3D As New Renderer()
+    Private ReadOnly r3D As New Renderer()
 
     Private gifAnim As New GifEncoder(100)
     Private gifAnimEnable As Boolean = False
@@ -28,6 +27,8 @@ Public Class FormMain
     Private Sub Main_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         CreateEventHandlers()
         InitializeScene()
+
+        TextBoxAlgo.Visible = False
 
         'AddObjectsToScene_Sample1()
         'AddObjectsToScene_Sample2()
@@ -54,7 +55,7 @@ Public Class FormMain
         r3D.RenderMode = RenderModes.ZBuffer 'Or RenderModes.ZBufferWireframe
         r3D.BackColor = Color.Black
         r3D.ZBufferWireframeColor = Color.White
-        r3D.ZBufferPixelSize = 3
+        r3D.ZBufferPixelSize = 2
         r3D.ZBufferColorDepth = True
         r3D.ZBufferTransparency = False
 
@@ -64,15 +65,17 @@ Public Class FormMain
     Private Sub CreateEventHandlers()
         AddHandler Me.SizeChanged, Sub() SetSurfaceSize()
         AddHandler Me.KeyDown, Sub(s1 As Object, e1 As KeyEventArgs)
-                                   If e1.KeyCode = Keys.Enter Then
-                                       If gifAnimEnable Then
-                                           gifAnimEnable = False
-                                           gifAnim.Save(IO.Path.Combine(
-                                                            Environment.GetFolderPath(
-                                                                Environment.SpecialFolder.Desktop),
-                                                                "3dcapture.gif"))
-                                       Else
-                                           gifAnimEnable = True
+                                   If TextBoxAlgo.ReadOnly Then
+                                       If e1.KeyCode = Keys.Enter Then
+                                           If gifAnimEnable Then
+                                               gifAnimEnable = False
+                                               gifAnim.Save(IO.Path.Combine(
+                                                                Environment.GetFolderPath(
+                                                                    Environment.SpecialFolder.Desktop),
+                                                                    "3dcapture.gif"))
+                                           Else
+                                               gifAnimEnable = True
+                                           End If
                                        End If
                                    End If
                                End Sub
@@ -161,8 +164,6 @@ Public Class FormMain
                                                Color.Green}    ' LEFT
 
         randomizeColors = False
-        r3D.ZBufferPixelSize = 2
-        r3D.ZBufferColorDepth = False
 
         For x As Integer = 0 To 2
             For y As Integer = 0 To 2
@@ -204,16 +205,33 @@ Public Class FormMain
 
         AddHandler Me.KeyDown, Sub(sender As Object, e As KeyEventArgs)
                                    SyncLock RubikHelper.SyncRotationObj
-                                       Select Case e.KeyCode
-                                           Case Keys.F : RubikHelper.RotateFront(r3D, e.Shift)  ' Front
-                                           Case Keys.U : RubikHelper.RotateUp(r3D, e.Shift)     ' Top
-                                           Case Keys.L : RubikHelper.RotateLeft(r3D, e.Shift)   ' Left
-                                           Case Keys.R : RubikHelper.RotateRight(r3D, e.Shift)  ' Right
-                                           Case Keys.B : RubikHelper.RotateBack(r3D, e.Shift)   ' Back
-                                           Case Keys.D : RubikHelper.RotateDown(r3D, e.Shift)   ' Down
-                                       End Select
+                                       If TextBoxAlgo.ReadOnly Then
+                                           Select Case e.KeyCode
+                                               Case Keys.F : RubikHelper.RotateFront(r3D, e.Shift)  ' Front
+                                               Case Keys.U : RubikHelper.RotateUp(r3D, e.Shift)     ' Top
+                                               Case Keys.L : RubikHelper.RotateLeft(r3D, e.Shift)   ' Left
+                                               Case Keys.R : RubikHelper.RotateRight(r3D, e.Shift)  ' Right
+                                               Case Keys.B : RubikHelper.RotateBack(r3D, e.Shift)   ' Back
+                                               Case Keys.D : RubikHelper.RotateDown(r3D, e.Shift)   ' Down
+                                           End Select
+                                       End If
                                    End SyncLock
                                End Sub
+
+        TextBoxAlgo.Visible = True
+        TextBoxAlgo.ReadOnly = True
+
+        AddHandler TextBoxAlgo.Click, Sub() TextBoxAlgo.ReadOnly = False
+        AddHandler TextBoxAlgo.KeyDown, Sub(sender As Object, e As KeyEventArgs)
+                                            Dim algo As String = TextBoxAlgo.Text.ToUpper()
+                                            Select Case e.KeyCode
+                                                Case Keys.Enter
+                                                    Task.Run(Sub() RubikHelper.Parse(r3D, algo))
+                                                    TextBoxAlgo.Text = ""
+                                                    TextBoxAlgo.ReadOnly = True
+                                            End Select
+                                        End Sub
+
     End Sub
 
     Private Sub RandomizeFacesColors(object3D As Object3D)
