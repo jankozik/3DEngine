@@ -52,7 +52,7 @@ Public Class RubikHelper
                     Next
                 Next
 #If Not DEBUG Then
-                Thread.Sleep(1)
+                If (a Mod 10) = 0 Then Thread.Sleep(1)
 #End If
             Next
         End SyncLock

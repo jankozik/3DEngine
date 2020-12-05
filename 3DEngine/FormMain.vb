@@ -152,14 +152,13 @@ Public Class FormMain
     Private Sub AddObjectsToScene_Sample5()
         Dim s As Double = 4
         Dim sh As Double = s / 2 + 0.75
-        Dim c As Object3D
         Dim paintFace As Boolean
-        Dim colors As New List(Of Color) From {Color.Green,     ' FRONT
-                                               Color.Red,       ' RIGHT
-                                               Color.White,     ' TOP
-                                               Color.Yellow,    ' BOTTOM
-                                               Color.Blue,      ' BACK
-                                               Color.Orange}    ' LEFT
+        Dim colors As New List(Of Color) From {Color.Orange,   ' FRONT
+                                               Color.Blue,     ' RIGHT
+                                               Color.Yellow,   ' TOP
+                                               Color.White,    ' BOTTOM
+                                               Color.Red,      ' BACK
+                                               Color.Green}    ' LEFT
 
         randomizeColors = False
         r3D.ZBufferPixelSize = 2
@@ -168,7 +167,7 @@ Public Class FormMain
         For x As Integer = 0 To 2
             For y As Integer = 0 To 2
                 For z As Integer = 0 To 2
-                    c = New Object3D(Primitives.Cube(s), Color.Black)
+                    Dim c As New Object3D(Primitives.Cube(s), Color.Black)
                     c.TransformMove(x * sh - sh, y * sh - sh, z * sh - sh)
                     For i As Integer = 0 To c.Faces.Count - 1
                         Select Case i
