@@ -12,12 +12,28 @@ Public Class RubikHelper
                               0, 0, If(ccw, -1, 1)))
     End Sub
 
+    Public Shared Sub RotateBack(r3d As Renderer, ccw As Boolean)
+        Task.Run(Sub() Rotate(r3d,
+                              0, 2,
+                              0, 2,
+                              2, 2,
+                              0, 0, If(ccw, 1, -1)))
+    End Sub
+
     Public Shared Sub RotateUp(r3d As Renderer, ccw As Boolean)
         Task.Run(Sub() Rotate(r3d,
                               0, 2,
                               0, 0,
                               0, 2,
                               0, If(ccw, 1, -1), 0))
+    End Sub
+
+    Public Shared Sub RotateDown(r3d As Renderer, ccw As Boolean)
+        Task.Run(Sub() Rotate(r3d,
+                              0, 2,
+                              2, 2,
+                              0, 2,
+                              0, If(ccw, -1, 1), 0))
     End Sub
 
     Public Shared Sub RotateLeft(r3d As Renderer, ccw As Boolean)
@@ -36,7 +52,6 @@ Public Class RubikHelper
                               If(ccw, 1, -1), 0, 0))
     End Sub
 
-    ' TODO: Add support to rotate counter-clockwise
     Public Shared Sub Rotate(r3d As Renderer, xi As Integer, xm As Integer, yi As Integer, ym As Integer, zi As Integer, zm As Integer, i As Integer, j As Integer, k As Integer)
         Dim n As Integer
 
@@ -52,7 +67,7 @@ Public Class RubikHelper
                     Next
                 Next
 #If Not DEBUG Then
-                If (a Mod 10) = 0 Then Thread.Sleep(1)
+                If (a Mod 30) = 0 Then Thread.Sleep(1)
 #End If
             Next
         End SyncLock

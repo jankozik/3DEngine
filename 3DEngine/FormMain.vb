@@ -209,6 +209,8 @@ Public Class FormMain
                                            Case Keys.U : RubikHelper.RotateUp(r3D, e.Shift)     ' Top
                                            Case Keys.L : RubikHelper.RotateLeft(r3D, e.Shift)   ' Left
                                            Case Keys.R : RubikHelper.RotateRight(r3D, e.Shift)  ' Right
+                                           Case Keys.B : RubikHelper.RotateBack(r3D, e.Shift)   ' Back
+                                           Case Keys.D : RubikHelper.RotateDown(r3D, e.Shift)   ' Down
                                        End Select
                                    End SyncLock
                                End Sub
