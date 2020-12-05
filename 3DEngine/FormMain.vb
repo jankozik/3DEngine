@@ -13,6 +13,10 @@ Public Class FormMain
     Private captureFrame As Boolean
     Private randomizeColors As Boolean = True
 
+    Private Delegate Sub Sample()
+    Private samples As Sample()
+    Private sampleIndex As Integer = 0
+
     Public Sub New()
         ' This call is required by the designer.
         InitializeComponent()
@@ -28,22 +32,14 @@ Public Class FormMain
         CreateEventHandlers()
         InitializeScene()
 
-        TextBoxAlgo.Visible = False
+        samples = {New Sample(AddressOf AddObjectsToScene_Sample1),
+                   New Sample(AddressOf AddObjectsToScene_Sample2),
+                   New Sample(AddressOf AddObjectsToScene_Sample3),
+                   New Sample(AddressOf AddObjectsToScene_Sample4),
+                   New Sample(AddressOf AddObjectsToScene_Sample5)
+                  }
 
-        'AddObjectsToScene_Sample1()
-        'AddObjectsToScene_Sample2()
-        'AddObjectsToScene_Sample3()
-        'AddObjectsToScene_Sample4()
-        AddObjectsToScene_Sample5()
-
-        'Dim txt As String = ""
-        'For Each o In r3D.Objects3D
-        '    For Each v In o.Value.Vertices
-        '        txt += v.ToString() + Environment.NewLine
-        '    Next
-        'Next
-        'IO.File.WriteAllText(IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "sphere.txt"), txt)
-        If randomizeColors Then r3D.Objects3D.ForEach(Sub(o3d) RandomizeFacesColors(o3d.Value))
+        UpdateScene(0)
 
         StartRenderingThread()
     End Sub
@@ -65,20 +61,54 @@ Public Class FormMain
     Private Sub CreateEventHandlers()
         AddHandler Me.SizeChanged, Sub() SetSurfaceSize()
         AddHandler Me.KeyDown, Sub(s1 As Object, e1 As KeyEventArgs)
-                                   If TextBoxAlgo.ReadOnly Then
-                                       If e1.KeyCode = Keys.Enter Then
-                                           If gifAnimEnable Then
-                                               gifAnimEnable = False
-                                               gifAnim.Save(IO.Path.Combine(
-                                                                Environment.GetFolderPath(
-                                                                    Environment.SpecialFolder.Desktop),
-                                                                    "3dcapture.gif"))
-                                           Else
-                                               gifAnimEnable = True
+                                   Select Case e1.KeyCode
+                                       Case Keys.Enter
+                                           If TextBoxAlgo.ReadOnly Then
+                                               If gifAnimEnable Then
+                                                   gifAnimEnable = False
+                                                   gifAnim.Save(IO.Path.Combine(
+                                                                    Environment.GetFolderPath(
+                                                                        Environment.SpecialFolder.Desktop),
+                                                                        "3dcapture.gif"))
+                                               Else
+                                                   gifAnimEnable = True
+                                               End If
                                            End If
-                                       End If
-                                   End If
+
+                                       Case Keys.Left
+                                           UpdateScene(-1)
+
+                                       Case Keys.Right
+                                           UpdateScene(1)
+
+                                   End Select
                                End Sub
+    End Sub
+
+    Private Sub UpdateScene(offset As Integer)
+        sampleIndex += offset
+
+        If sampleIndex < 0 Then
+            sampleIndex = samples.Count - 1
+        ElseIf sampleIndex = samples.Count Then
+            sampleIndex = 0
+        End If
+
+        SyncLock RubikHelper.SyncMastObj
+            r3D.Objects3D.Clear()
+            r3D.AngleX = 5
+            r3D.AngleY = 5
+            samples(sampleIndex).Invoke()
+
+            'Dim txt As String = ""
+            'For Each o In r3D.Objects3D
+            '    For Each v In o.Value.Vertices
+            '        txt += v.ToString() + Environment.NewLine
+            '    Next
+            'Next
+            'IO.File.WriteAllText(IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "sphere.txt"), txt)
+            If randomizeColors Then r3D.Objects3D.ForEach(Sub(o3d) RandomizeFacesColors(o3d.Value))
+        End SyncLock
     End Sub
 
     Private Sub StartRenderingThread()
@@ -122,12 +152,23 @@ Public Class FormMain
         r3D.Camera = New Point3d(0.0, 0.0, -10.0)
     End Sub
 
+    Private Sub SetTextBoxAlgoState(state As Boolean)
+        TextBoxAlgo.Visible = state
+        TextBoxAlgo.ReadOnly = True
+    End Sub
+
     Private Sub AddObjectsToScene_Sample1()
+        SetTextBoxAlgoState(False)
+        randomizeColors = True
+
         r3D.Objects3D.Add("Cube", New Object3D(Primitives.Cube(8), Color.Blue))
         r3D.Objects3D("Cube").TransformRotate(45, 45, 0)
     End Sub
 
     Private Sub AddObjectsToScene_Sample2()
+        SetTextBoxAlgoState(False)
+        randomizeColors = True
+
         r3D.Objects3D.Add("Cube",
                           New Object3D(Primitives.Cube(8),
                                        Color.Blue))
@@ -144,10 +185,16 @@ Public Class FormMain
     End Sub
 
     Private Sub AddObjectsToScene_Sample3()
+        SetTextBoxAlgoState(False)
+        randomizeColors = True
+
         r3D.Objects3D.Add("Cuboid", New Object3D(Primitives.Cuboid(4, 12), Color.Blue))
     End Sub
 
     Private Sub AddObjectsToScene_Sample4()
+        SetTextBoxAlgoState(False)
+        randomizeColors = True
+
         r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere(14), Color.Blue))
         'r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere2(14), Color.Blue))
     End Sub
@@ -218,8 +265,7 @@ Public Class FormMain
                                    End SyncLock
                                End Sub
 
-        TextBoxAlgo.Visible = True
-        TextBoxAlgo.ReadOnly = True
+        SetTextBoxAlgoState(True)
 
         AddHandler TextBoxAlgo.Click, Sub() TextBoxAlgo.ReadOnly = False
         AddHandler TextBoxAlgo.KeyDown, Sub(sender As Object, e As KeyEventArgs)
@@ -317,9 +363,10 @@ Public Class FormMain
             End If
 
 
-            g.DrawString($"Objects: {r3D.Objects3D.Count}", Me.Font, Brushes.White, 5, 5 + 15 * 0)
-            g.DrawString($"Triangles: {r3D.Objects3D.Sum(Function(o) o.Value.Triangles.Count)}", Me.Font, Brushes.White, 5, 5 + 15 * 1)
-            g.DrawString($"FPS: {r3D.FramesPerSecond:N2}", Me.Font, Brushes.White, 5, 5 + 15 * 2)
+            g.DrawString($"Objects:          {r3D.Objects3D.Count}", Me.Font, Brushes.White, 5, 5 + 15 * 0)
+            g.DrawString($"Triangles:        {r3D.Objects3D.Sum(Function(o) o.Value.Triangles.Count)}", Me.Font, Brushes.White, 5, 5 + 15 * 1)
+            g.DrawString($"FPS:              {r3D.FramesPerSecond:N2}", Me.Font, Brushes.White, 5, 5 + 15 * 2)
+            g.DrawString($"Left/Right Arrow: Change Scene", Me.Font, Brushes.White, 5, 5 + 15 * 4)
         End SyncLock
         'DrawAxis(g)
 
