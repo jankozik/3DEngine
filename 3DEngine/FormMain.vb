@@ -146,10 +146,12 @@ Public Class FormMain
     End Sub
 
     Private Sub SetSurfaceSize()
-        SyncLock RubikHelper.SyncMastObj
+        If Me.DisplayRectangle.Width > 0 AndAlso Me.DisplayRectangle.Height > 0 Then
+            SyncLock RubikHelper.SyncMastObj
             r3D.SurfaceSize = Me.DisplayRectangle.Size
         End SyncLock
-        r3D.Camera = New Point3d(0.0, 0.0, -10.0)
+            r3D.Camera = New Point3d(0.0, 0.0, -10.0)
+        End If
     End Sub
 
     Private Sub SetTextBoxAlgoState(state As Boolean)
