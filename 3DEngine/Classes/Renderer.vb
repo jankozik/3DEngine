@@ -225,7 +225,6 @@
                                                  f.Vertices.ForEach(Sub(v) RenderZPixel(Color.Red, TranslatePoint(v).AsInt(ZBufferPixelSize), minZ, maxZ))
                                              End If
                                          Next
-                                         'Next
                                      End Sub)
     End Sub
 

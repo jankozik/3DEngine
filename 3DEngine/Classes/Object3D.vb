@@ -18,6 +18,11 @@
         End Sub
     End Structure
 
+    Public Enum TriangulationModes
+        Delaunay
+        QuickHull
+    End Enum
+
     Private mVertices As New List(Of Point3d)
     Private mEdges As New List(Of Line3d)
     Private mFaces As New List(Of Face)
@@ -27,14 +32,38 @@
     Private tessellator As New Triangualtor()
     Private mIsSolid As Boolean
 
-    Public Sub New(vertices As List(Of Point3d), Optional triangulate As Boolean = True)
+    Public Sub New(vertices As List(Of Point3d), Optional triangulate As Boolean = True, Optional triangulationMode As TriangulationModes = TriangulationModes.QuickHull)
         mIsSolid = triangulate
         'mVertices = vertices
-        InitShape(vertices, triangulate)
+
+        Select Case triangulationMode
+            Case TriangulationModes.Delaunay
+                InitShapeDelaunay(vertices, triangulate)
+            Case TriangulationModes.QuickHull
+                InitShapeQuickHull(vertices, triangulate)
+        End Select
     End Sub
 
-    Public Sub New(vertices As List(Of Point3d), color As Color, Optional triangulate As Boolean = True)
-        Me.New(vertices, triangulate)
+    Public Sub New(vertices As List(Of Point3d), color As Color, Optional triangulate As Boolean = True, Optional triangulationMode As TriangulationModes = TriangulationModes.QuickHull)
+        Me.New(vertices, triangulate, triangulationMode)
+        Me.Color = color
+    End Sub
+
+    Public Sub New(fileName As String, length As Double, color As Color, Optional triangulate As Boolean = True, Optional triangulationMode As TriangulationModes = TriangulationModes.QuickHull)
+        Dim pts As New List(Of Point3d)
+
+        For Each line As String In IO.File.ReadAllLines(fileName)
+            Dim ps() As String = line.Split(" ")
+            pts.Add(New Point3d(Double.Parse(ps(0)) * length, Double.Parse(ps(1)) * length, Double.Parse(ps(2)) * length))
+        Next
+
+        mIsSolid = triangulate
+        Select Case triangulationMode
+            Case TriangulationModes.Delaunay
+                InitShapeDelaunay(pts, triangulate)
+            Case TriangulationModes.QuickHull
+                InitShapeQuickHull(pts, triangulate)
+        End Select
         Me.Color = color
     End Sub
 
@@ -90,12 +119,6 @@
     Public ReadOnly Property Edges As List(Of Line3d)
         Get
             Return mEdges
-        End Get
-    End Property
-
-    Public ReadOnly Property Triangles As List(Of Triangle3d)
-        Get
-            Return tessellator?.Triangles
         End Get
     End Property
 
@@ -157,7 +180,7 @@
         Next
     End Sub
 
-    Private Sub InitShape(verts As List(Of Point3d), Optional triangulate As Boolean = True, Optional simplify As Boolean = True)
+    Private Sub InitShapeDelaunay(verts As List(Of Point3d), Optional triangulate As Boolean = True, Optional simplify As Boolean = True)
         ' Counter-clockwise Ordering
         ' http://stackoverflow.com/questions/8142388/in-what-order-should-i-send-my-vertices-to-opengl-for-culling
         'simplify = False
@@ -171,6 +194,39 @@
         Else
             mFaces.Add(New Face(verts))
         End If
+        UpdateObject()
+        Console.WriteLine($"{mVertices.Count:N0} vertices, {mEdges.Count:N0} edges and {mFaces.Count:N0} faces")
+
+        ' Euler's number and closed surfaces
+        ' For closed surfaces V - E + F = 2
+        mIsValid = (verts.Count - mEdges.Count + mFaces.Count = 2)
+        'mIsValid = True
+    End Sub
+
+    Private Sub InitShapeQuickHull(verts As List(Of Point3d), Optional triangulate As Boolean = True, Optional simplify As Boolean = True)
+        Dim p3d(verts.Count - 1) As QuickHull3D.Point3d
+        For i As Integer = 0 To verts.Count - 1
+            p3d(i) = New QuickHull3D.Point3d(verts(i).X, verts(i).Y, verts(i).Z)
+        Next
+
+        Dim hull As New QuickHull3D.Hull(p3d)
+        If triangulate Then hull.Triangulate()
+        Dim vs = hull.GetVertices()
+        Dim fs = hull.GetFaces()
+
+        Dim ts As New List(Of Triangle3d)
+        For Each f In fs
+            Dim p1 = vs(f(0))
+            Dim p2 = vs(f(1))
+            Dim p3 = vs(f(2))
+            ts.Add(New Triangle3d(
+                            New Point3d(p1.x, p1.y, p1.z),
+                            New Point3d(p2.x, p2.y, p2.z),
+                            New Point3d(p3.x, p3.y, p3.z)
+                       )
+                   )
+        Next
+        ExtractFaces(ts, simplify)
 
         UpdateObject()
         Console.WriteLine($"{mVertices.Count:N0} vertices, {mEdges.Count:N0} edges and {mFaces.Count:N0} faces")

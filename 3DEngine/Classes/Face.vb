@@ -140,8 +140,9 @@
             v2 = Vertices((i + 1) Mod n)
 
             mNormal += v1.Cross(v2)
-            mNormal.Normalize()
         Next
+
+        mNormal.Normalize()
     End Sub
 
     ' http://stackoverflow.com/questions/21114796/3d-ray-quad-intersection-test-in-java

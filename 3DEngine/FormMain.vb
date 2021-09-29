@@ -1,4 +1,5 @@
-﻿Imports System.Threading
+﻿Imports System.IO
+Imports System.Threading
 Imports N3DEngine.Renderer
 
 Public Class FormMain
@@ -16,6 +17,8 @@ Public Class FormMain
     Private Delegate Sub Sample()
     Private samples As Sample()
     Private sampleIndex As Integer = 0
+
+    Private triangulationMode As Object3D.TriangulationModes = Object3D.TriangulationModes.QuickHull
 
     Public Sub New()
         ' This call is required by the designer.
@@ -36,7 +39,8 @@ Public Class FormMain
                    New Sample(AddressOf AddObjectsToScene_Sample2),
                    New Sample(AddressOf AddObjectsToScene_Sample3),
                    New Sample(AddressOf AddObjectsToScene_Sample4),
-                   New Sample(AddressOf AddObjectsToScene_Sample5)
+                   New Sample(AddressOf AddObjectsToScene_Sample5),
+                   New Sample(AddressOf AddObjectsToScene_Sample6)
                   }
 
         UpdateScene(0)
@@ -148,8 +152,8 @@ Public Class FormMain
     Private Sub SetSurfaceSize()
         If Me.DisplayRectangle.Width > 0 AndAlso Me.DisplayRectangle.Height > 0 Then
             SyncLock RubikHelper.SyncMastObj
-            r3D.SurfaceSize = Me.DisplayRectangle.Size
-        End SyncLock
+                r3D.SurfaceSize = Me.DisplayRectangle.Size
+            End SyncLock
             r3D.Camera = New Point3d(0.0, 0.0, -10.0)
         End If
     End Sub
@@ -163,7 +167,7 @@ Public Class FormMain
         SetTextBoxAlgoState(False)
         randomizeColors = True
 
-        r3D.Objects3D.Add("Cube", New Object3D(Primitives.Cube(8), Color.Blue))
+        r3D.Objects3D.Add("Cube", New Object3D(Primitives.Cube(8), Color.Blue,, triangulationMode))
         r3D.Objects3D("Cube").TransformRotate(45, 45, 0)
     End Sub
 
@@ -171,17 +175,11 @@ Public Class FormMain
         SetTextBoxAlgoState(False)
         randomizeColors = True
 
-        r3D.Objects3D.Add("Cube",
-                          New Object3D(Primitives.Cube(8),
-                                       Color.Blue))
-        r3D.Objects3D.Add("Tetrahedron",
-                          New Object3D(Primitives.Tetrahedron(8),
-                                       Color.Red))
-        r3D.Objects3D.Add("SquarePyramid",
-                          New Object3D(Primitives.SquarePyramid(8),
-                                       Color.Green))
+        r3D.Objects3D.Add("Cube", New Object3D(Primitives.Cube(8), Color.Blue,, triangulationMode))
+        r3D.Objects3D.Add("Tetrahedron", New Object3D(Primitives.Tetrahedron(8), Color.Red,, triangulationMode))
+        r3D.Objects3D.Add("SquarePyramid", New Object3D(Primitives.SquarePyramid(8), Color.Green,, triangulationMode))
 
-        r3D.Objects3D("Cube").TransformMove(-6, 0, 0)
+        r3D.Objects3D("Cube").TransformMove(IIf(triangulationMode = Object3D.TriangulationModes.Delaunay, -6, -20), 0, 0)
         r3D.Objects3D("SquarePyramid").TransformRotate(-90, 0, 0)
         r3D.Objects3D("SquarePyramid").TransformMove(18, 0, 0)
     End Sub
@@ -190,19 +188,21 @@ Public Class FormMain
         SetTextBoxAlgoState(False)
         randomizeColors = True
 
-        r3D.Objects3D.Add("Cuboid", New Object3D(Primitives.Cuboid(4, 12), Color.Blue))
+        r3D.Objects3D.Add("Cuboid", New Object3D(Primitives.Cuboid(4, 12), Color.Blue,, triangulationMode))
     End Sub
 
     Private Sub AddObjectsToScene_Sample4()
         SetTextBoxAlgoState(False)
         randomizeColors = True
 
-        r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere(14), Color.Blue))
-        'r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere2(14), Color.Blue))
+        r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere(14), Color.Blue,, triangulationMode))
+        'r3D.Objects3D.Add("Sphere", New Object3D(Primitives.Sphere2(14), Color.Blue,, triangulationMode))
     End Sub
 
     Private Sub AddObjectsToScene_Sample5()
-        Dim s As Double = 4
+        Static isFirstTime As Boolean = True
+
+        Dim s As Double = IIf(triangulationMode = Object3D.TriangulationModes.Delaunay, 4, 8)
         Dim sh As Double = s / 2 + 0.75
         Dim paintFace As Boolean
         Dim colors As New List(Of Color) From {Color.Orange,   ' FRONT
@@ -217,7 +217,7 @@ Public Class FormMain
         For x As Integer = 0 To 2
             For y As Integer = 0 To 2
                 For z As Integer = 0 To 2
-                    Dim c As New Object3D(Primitives.Cube(s), Color.Black)
+                    Dim c As New Object3D(Primitives.Cube(s), Color.Black,, triangulationMode)
                     c.TransformMove(x * sh - sh, y * sh - sh, z * sh - sh)
                     For i As Integer = 0 To c.Faces.Count - 1
                         Select Case i
@@ -228,7 +228,7 @@ Public Class FormMain
                             Case 4 : paintFace = (z = 2) ' BACK
                             Case 5 : paintFace = (x = 0) ' LEFT
                         End Select
-                        If paintFace Then c.Faces(i).Color = colors(i)
+                        If paintFace Then c.Faces(i).Color = colors(i Mod colors.Count)
                     Next
 
                     ' This improves performance but reduces rendering quality due to color bleeding...
@@ -252,34 +252,78 @@ Public Class FormMain
         r3D.AngleX += 45
         r3D.AngleY -= 45
 
-        AddHandler Me.KeyDown, Sub(sender As Object, e As KeyEventArgs)
-                                   SyncLock RubikHelper.SyncRotationObj
-                                       If TextBoxAlgo.ReadOnly Then
-                                           Select Case e.KeyCode
-                                               Case Keys.F : RubikHelper.RotateFront(r3D, e.Shift)  ' Front
-                                               Case Keys.U : RubikHelper.RotateUp(r3D, e.Shift)     ' Top
-                                               Case Keys.L : RubikHelper.RotateLeft(r3D, e.Shift)   ' Left
-                                               Case Keys.R : RubikHelper.RotateRight(r3D, e.Shift)  ' Right
-                                               Case Keys.B : RubikHelper.RotateBack(r3D, e.Shift)   ' Back
-                                               Case Keys.D : RubikHelper.RotateDown(r3D, e.Shift)   ' Down
-                                           End Select
-                                       End If
-                                   End SyncLock
-                               End Sub
+        If isFirstTime Then
+            AddHandler Me.KeyDown, Sub(sender As Object, e As KeyEventArgs)
+                                       SyncLock RubikHelper.SyncRotationObj
+                                           Debug.WriteLine(TextBoxAlgo.ReadOnly)
+                                           If TextBoxAlgo.ReadOnly Then
+                                               Select Case e.KeyCode
+                                                   Case Keys.F : RubikHelper.RotateFront(r3D, e.Shift)  ' Front
+                                                   Case Keys.U : RubikHelper.RotateUp(r3D, e.Shift)     ' Top
+                                                   Case Keys.L : RubikHelper.RotateLeft(r3D, e.Shift)   ' Left
+                                                   Case Keys.R : RubikHelper.RotateRight(r3D, e.Shift)  ' Right
+                                                   Case Keys.B : RubikHelper.RotateBack(r3D, e.Shift)   ' Back
+                                                   Case Keys.D : RubikHelper.RotateDown(r3D, e.Shift)   ' Down
+                                               End Select
+                                           End If
+                                       End SyncLock
+                                   End Sub
+
+            AddHandler TextBoxAlgo.Click, Sub() TextBoxAlgo.ReadOnly = False
+            AddHandler TextBoxAlgo.KeyDown, Sub(sender As Object, e As KeyEventArgs)
+                                                Dim algo As String = TextBoxAlgo.Text.ToUpper()
+                                                Select Case e.KeyCode
+                                                    Case Keys.Enter
+                                                        Task.Run(Sub() RubikHelper.Parse(r3D, algo))
+                                                        TextBoxAlgo.Text = ""
+                                                        TextBoxAlgo.ReadOnly = True
+                                                End Select
+                                            End Sub
+
+            isFirstTime = False
+        End If
 
         SetTextBoxAlgoState(True)
+    End Sub
 
-        AddHandler TextBoxAlgo.Click, Sub() TextBoxAlgo.ReadOnly = False
-        AddHandler TextBoxAlgo.KeyDown, Sub(sender As Object, e As KeyEventArgs)
-                                            Dim algo As String = TextBoxAlgo.Text.ToUpper()
-                                            Select Case e.KeyCode
-                                                Case Keys.Enter
-                                                    Task.Run(Sub() RubikHelper.Parse(r3D, algo))
-                                                    TextBoxAlgo.Text = ""
-                                                    TextBoxAlgo.ReadOnly = True
-                                            End Select
-                                        End Sub
+    Private Sub AddObjectsToScene_Sample6()
+        Static isFirstTime As Boolean = True
+        Static solidIndex As Integer = 0
+        Static solids As New List(Of FileInfo)
+        Static currentSolidIdx As Integer = 0
 
+        SetTextBoxAlgoState(False)
+        randomizeColors = True
+
+        If isFirstTime Then
+            For Each d In (New DirectoryInfo("solids")).GetDirectories()
+                solids.AddRange(d.GetFiles("*.txt"))
+            Next
+        End If
+
+        Dim solidName As String = $"Solid: {solids(currentSolidIdx).Name}"
+
+        r3D.Objects3D.Clear()
+        r3D.Objects3D.Add(solidName, New Object3D(solids(currentSolidIdx).FullName, 8, Color.Blue,, triangulationMode))
+        r3D.Objects3D(solidName).TransformRotate(45, 45, 0)
+
+        If isFirstTime Then
+            AddHandler Me.KeyDown, Sub(s1 As Object, e1 As KeyEventArgs)
+                                       Select Case e1.KeyCode
+                                           Case Keys.PageUp
+                                               currentSolidIdx += 1
+                                               If currentSolidIdx >= solids.Count Then currentSolidIdx = 0
+                                               AddObjectsToScene_Sample6()
+                                           Case Keys.PageDown
+                                               currentSolidIdx -= 1
+                                               If currentSolidIdx <= 0 Then currentSolidIdx = solids.Count - 1
+                                               AddObjectsToScene_Sample6()
+                                       End Select
+                                   End Sub
+            isFirstTime = False
+        Else
+            If randomizeColors Then r3D.Objects3D.ForEach(Sub(o3d) RandomizeFacesColors(o3d.Value))
+        End If
     End Sub
 
     Private Sub RandomizeFacesColors(object3D As Object3D)
@@ -346,7 +390,7 @@ Public Class FormMain
         Return list
     End Function
 
-    Private Sub FormMain_Paint(sender As Object, e As System.Windows.Forms.PaintEventArgs) Handles Me.Paint
+    Private Sub FormMain_Paint(sender As Object, e As PaintEventArgs) Handles Me.Paint
         Dim g As Graphics = e.Graphics
         'g.SmoothingMode = SmoothingMode.AntiAlias 
         'g.InterpolationMode = InterpolationMode.Bicubic
@@ -364,9 +408,14 @@ Public Class FormMain
                 g.DrawString("Recording", Me.Font, Brushes.Red, Point.Empty)
             End If
 
+            Dim names As New List(Of String)
+            For Each obj In r3D.Objects3D
+                names.Add(obj.Key)
+            Next
+            Dim namesAsString As String = String.Join(", ", names.ToArray())
 
-            g.DrawString($"Objects:          {r3D.Objects3D.Count}", Me.Font, Brushes.White, 5, 5 + 15 * 0)
-            g.DrawString($"Triangles:        {r3D.Objects3D.Sum(Function(o) o.Value.Triangles.Count)}", Me.Font, Brushes.White, 5, 5 + 15 * 1)
+            g.DrawString($"Objects:          {r3D.Objects3D.Count} | {namesAsString}", Me.Font, Brushes.White, 5, 5 + 15 * 0)
+            g.DrawString($"Faces:            {r3D.Objects3D.Sum(Function(o) o.Value.Faces.Count)}", Me.Font, Brushes.White, 5, 5 + 15 * 1)
             g.DrawString($"FPS:              {r3D.FramesPerSecond:N2}", Me.Font, Brushes.White, 5, 5 + 15 * 2)
             g.DrawString($"Left/Right Arrow: Change Scene", Me.Font, Brushes.White, 5, 5 + 15 * 4)
         End SyncLock

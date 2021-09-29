@@ -179,6 +179,12 @@
     <Import Include="System.Windows.Forms" />
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\QuickHull3D\QuickHull3D\QuickHull3D.csproj">
+      <Project>{d2f3c6d3-76d6-4369-8ce1-e297e3bf34b8}</Project>
+      <Name>QuickHull3D</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
